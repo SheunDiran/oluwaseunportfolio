@@ -6,7 +6,7 @@ const aboutHero = "/images/about_systems.jpg";
 const aboutSystems = "/images/dark_bg.jpg";
 
 const projects = [
-  ["D5 RENTALS", "Product Direction · Web Build", "Event Equipment Booking", "An event equipment booking platform for chairs, tables, canopies and event essentials in Lagos.", "https://d5events-mbl97du.manus.space", "INACTIVE"],
+  ["D5 RENTALS", "Product Direction · Web Build", "Event Equipment Booking", "An event equipment booking platform for chairs, tables, canopies and event essentials in Lagos.", "https://d5events.vercel.app", "LIVE"],
   ["MAMAGUARD", "Product Builder", "NITHUB Hackathon", "A maternal health MVP built for the NITHUB Hackathon. Scored approximately 85/100 on the judging rubric.", "https://mamaguard.vercel.app", "LIVE"],
   ["DIRAN HUB PLATFORM", "Founder · Product Engineer", "Academy / Agency / Playground", "The academy, agency and playground platform for learning, project intake, client work and experimental builds.", "https://diranhub-ewvb8evs.manus.space/studio", "LIVE"],
   ["FERTILITYFIND SEARCH", "Product Builder · Full-Stack Developer", "Health Information Platform", "A clearer way to find fertility clinics across Lagos and Abuja, compare publicly listed services, and plan treatment costs with transparent information, update status and visible caveats.", "https://fertilityng-ijcltwbh.manus.space/", "LIVE"],
