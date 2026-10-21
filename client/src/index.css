@@ -1334,3 +1334,13 @@ img {
 .graphics-owner-add span { border-left: 1px solid rgba(215,244,103,.45); font-size: 8px; margin-left: 4px; padding-left: 12px; }
 .graphics-empty { background: #f0f2ec; color: #607066; font-family: 'DM Sans', sans-serif !important; padding: 32px; }
 @media (max-width: 520px) { .graphics-owner-add { align-items: flex-start; flex-wrap: wrap; } }
+
+/* Let the opening hero breathe edge-to-edge; keep its content on the page grid. */
+.sheun-hero {
+  width: 100%;
+  max-width: none !important;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: max(24px, calc((100% - 1160px) / 2)) !important;
+  padding-right: max(24px, calc((100% - 1160px) / 2)) !important;
+}
