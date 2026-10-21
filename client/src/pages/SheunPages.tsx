@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowUpRight, Braces, CircleDot, Database, ExternalLink, Layers, Lightbulb, Monitor, Server, Users } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Braces, CircleDot, Database, ExternalLink, Layers, Lightbulb, Linkedin, Mail, MapPin, MessageCircle, Monitor, Phone, Server, Users } from "lucide-react";
 import SheunShell, { SheunFooter } from "@/components/SheunShell";
 
 const aboutHero = "/images/about_systems.jpg";
@@ -28,4 +28,35 @@ export function ProjectsPage() {
 export function TrainingPage() {
   return <SheunShell active="training"><main className="training-page"><section className="training-hero"><div><small>TRAINING & COMMUNITY / 04</small><h1>Build it.<br /><em>Then teach it.</em></h1><p>The work extends beyond the screen. I create practical spaces where people can understand technology, ship real projects and move closer to their next level.</p><div className="training-hero-links"><a href="https://diranhub-ewvb8evs.manus.space/studio" target="_blank" rel="noreferrer">Visit Diran Hub <ExternalLink size={14} /></a><a href="/contact.html">Start a cohort conversation <ArrowUpRight size={14} /></a></div></div><div className="training-hero-status"><span>THE MULTIPLIER</span><strong>30+</strong><small>learners trained<br />and counting</small></div></section><section className="training-proof"><div><strong>01</strong><span>Build beside<br />the learner</span></div><div><strong>02</strong><span>Make complex<br />ideas practical</span></div><div><strong>03</strong><span>Leave people<br />with momentum</span></div></section><section className="training-work"><div className="training-section-intro"><small>THE WORK / 01</small><h2>Teaching is part<br /><em>of the product.</em></h2><p>Every lesson is a small system: a clearer explanation, a useful exercise, a supportive review and enough room for someone else to find their way.</p></div><div className="training-programs"><article><span>01 / ACADEMY</span><h3>Diran Tech Academy</h3><p>Full-stack web development cohorts built around practical lessons, real-world project builds, direct mentorship, and the confidence to keep going after class ends.</p><a href="https://diranhub-ewvb8evs.manus.space/studio" target="_blank" rel="noreferrer">Explore Diran Hub <ExternalLink size={14} /></a></article><article><span>02 / TECH INSTRUCTOR</span><h3>CodeCamp · ILM Nexus Academy · MS Virtual Academy</h3><p>Served as Lead Tech Instructor delivering hands-on programming courses, web development bootcamps, and technical curriculum training across Python, JavaScript, and modern web engineering for emerging developers.</p><a href="/contact.html">Discuss cohort training <ArrowUpRight size={14} /></a></article><article><span>03 / COMMUNITY</span><h3>NESA Growth Club</h3><p>Organised and hosted a career growth talk, creating a room for questions, honest conversations and the next useful connection.</p><a href="/contact.html">Invite me to speak <ArrowUpRight size={14} /></a></article><article><span>04 / LEADERSHIP</span><h3>JCI Nigeria</h3><p>Community participation that keeps the work connected to people, service, responsibility and the wider world beyond technology.</p><a href="/about.html">Read the longer story <ArrowRight size={14} /></a></article></div></section><section className="training-loop"><div><small>THE TEACHING LOOP</small><h2>Explain.<br /><em>Build.</em><br />Share.</h2></div><div className="training-loop-list"><article><b>01</b><div><strong>Explain without ego.</strong><p>Use plain language, examples and patience to make the first step feel possible.</p></div></article><article><b>02</b><div><strong>Build something real.</strong><p>Move from theory to a working interface, workflow or product that can be tested.</p></div></article><article><b>03</b><div><strong>Share what works.</strong><p>Turn the lesson into a reusable starting point for the next person.</p></div></article></div></section><section className="training-cta"><small>THE NEXT COHORT</small><h2>Have a team to train<br /><em>or a room to fill?</em></h2><a href="/contact.html">Let&apos;s talk about it <ArrowUpRight size={15} /></a></section></main><SheunFooter /></SheunShell>;
 }
-export function ContactPage() { return <SheunShell active="contact"><main className="sheun-inner sheun-contact-page"><small>CONTACT / 05</small><h1>Let&apos;s make the<br /><span>next thing matter.</span></h1><p className="sheun-lead">Have a product to build, a team to train, or a useful question to work through? I&apos;d like to hear about it.</p><div className="sheun-contact-links"><a href="mailto:oluwaseunoyediran641@gmail.com">oluwaseunoyediran641@gmail.com</a><a href="tel:+2347073754496">+234-707-375-4496</a><span>Lagos, Nigeria.</span><a href="https://www.linkedin.com/feed/">LinkedIn <ExternalLink size={15} /></a><a href="https://wa.me/2347073754496?text=Hi%20Sheun%2C%20I%20found%20your%20portfolio%20and%20would%20love%20to%20talk.">Whatsapp <ExternalLink size={15} /></a></div></main><SheunFooter /></SheunShell>; }
+export function ContactPage() {
+  const topics = [
+    { number: "01", title: "Product & engineering", copy: "Building useful web products, interfaces, APIs, and the systems behind them." },
+    { number: "02", title: "Roles & collaboration", copy: "Full-stack opportunities, product teams, and thoughtful project partnerships." },
+    { number: "03", title: "Training & speaking", copy: "Developer education, practical workshops, mentoring, and community sessions." },
+  ];
+  return <SheunShell active="contact"><main className="contact-page">
+    <section className="contact-hero">
+      <div className="contact-hero-grid" aria-hidden="true" />
+      <div className="contact-hero-copy">
+        <small>CONTACT / LAGOS, NIGERIA</small>
+        <h1>Let&apos;s make<br /><em>the next thing</em><br />matter.</h1>
+        <p>Have a role, product idea, or team to support? Tell me what you&apos;re working on and where you need a thoughtful builder or educator.</p>
+        <div className="contact-hero-actions"><a href="mailto:oluwaseunoyediran641@gmail.com">Start with an email <ArrowUpRight size={15} /></a><a href="/projects.html">See what I build <ArrowRight size={15} /></a></div>
+        <span className="contact-hero-note"><i /> OPEN TO GOOD CONVERSATIONS</span>
+      </div>
+      <aside className="contact-card">
+        <div className="contact-card-head"><span>DIRECT CONTACT</span><b>01 / 04</b></div>
+        <h2>Choose your<br /><em>way in.</em></h2>
+        <div className="contact-direct-list">
+          <a href="mailto:oluwaseunoyediran641@gmail.com"><span className="contact-icon"><Mail size={17} /></span><span><small>EMAIL</small><strong>oluwaseunoyediran641@gmail.com</strong></span><ArrowUpRight size={16} /></a>
+          <a href="tel:+2347073754496"><span className="contact-icon"><Phone size={17} /></span><span><small>PHONE</small><strong>+234 707 375 4496</strong></span><ArrowUpRight size={16} /></a>
+          <a href="https://wa.me/2347073754496?text=Hi%20Sheun%2C%20I%20found%20your%20portfolio%20and%20would%20love%20to%20talk." target="_blank" rel="noreferrer"><span className="contact-icon"><MessageCircle size={17} /></span><span><small>WHATSAPP</small><strong>Send a direct message</strong></span><ArrowUpRight size={16} /></a>
+          <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer"><span className="contact-icon"><Linkedin size={17} /></span><span><small>LINKEDIN</small><strong>Connect professionally</strong></span><ArrowUpRight size={16} /></a>
+        </div>
+        <div className="contact-card-location"><MapPin size={15} /><span>Based in Lagos, Nigeria</span></div>
+      </aside>
+      <span className="contact-hero-index">S / 05</span>
+    </section>
+    <section className="contact-topics"><div className="contact-topics-intro"><small>A GOOD PLACE TO START</small><h2>Bring the<br /><em>real challenge.</em></h2><p>Whether you need a system built, a teammate, or a room full of learners inspired, we can start with a clear conversation.</p></div><div className="contact-topic-list">{topics.map((topic) => <article key={topic.number}><span>{topic.number}</span><div><h3>{topic.title}</h3><p>{topic.copy}</p></div><ArrowUpRight size={17} /></article>)}</div></section>
+  </main><SheunFooter /></SheunShell>;
+}
