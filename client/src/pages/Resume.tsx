@@ -31,7 +31,7 @@ export default function Resume() {
         </div>
 
         <div className="resume-header">
-          <img src="/images/sheun_portrait.jpg" alt="Oyediran Oluwaseun" />
+          <img src="/images/about-sheun-portrait.jpeg" alt="Oyediran Oluwaseun" />
           <div style={{ flex: 1 }}>
             <h1>OYEDIRAN OLUWASEUN</h1>
             <p style={{ color: "#198754", fontWeight: 600, fontSize: "16px", marginTop: "4px" }}>
