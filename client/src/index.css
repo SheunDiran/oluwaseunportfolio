@@ -1518,3 +1518,34 @@ img {
 .graphics-empty { background: #f0f2ec; color: #607066; font-family: 'DM Sans', sans-serif !important; padding: 32px; }
 @media (max-width: 780px) { .graphics-hero { display: block; min-height: 0; padding-bottom: 100px; padding-top: 90px; }.graphics-hero-index { margin-top: 55px; }.graphics-hero-foot { font-size: 7px; }.graphics-intro { display: block; padding-bottom: 80px; padding-top: 80px; }.graphics-intro > p { margin-top: 35px; }.graphics-gallery { padding-bottom: 80px; }.graphics-gallery-head { align-items: flex-start; display: block; }.graphics-gallery-head > span { margin-top: 26px; }.graphics-gallery-grid { display: block; }.graphics-gallery-card, .graphics-gallery-card:nth-child(2), .graphics-gallery-card:nth-child(5) { margin-bottom: 15px; }.graphics-image-wrap img, .graphics-gallery-card:nth-child(2) .graphics-image-wrap img, .graphics-gallery-card:nth-child(5) .graphics-image-wrap img { height: 420px; }.graphics-cta { align-items: start; display: block; padding-bottom: 75px; padding-top: 75px; }.graphics-cta > a { margin-top: 30px; }.graphics-cta-note { display: block; margin-top: 23px; } }
 @media (max-width: 520px) { .graphics-hero h1 { font-size: clamp(58px, 18vw, 82px); }.graphics-hero-index strong { font-size: 90px; }.graphics-hero-foot span:nth-child(2) { display: none; }.graphics-intro h2, .graphics-gallery h2 { font-size: 50px; }.graphics-filter-row { gap: 12px; }.graphics-filters { gap: 6px; }.graphics-filters button { font-size: 11px; padding: 8px 10px; }.graphics-gallery-card, .graphics-gallery-card:nth-child(2), .graphics-gallery-card:nth-child(5) { box-shadow: none; }.graphics-image-wrap img, .graphics-gallery-card:nth-child(2) .graphics-image-wrap img, .graphics-gallery-card:nth-child(5) .graphics-image-wrap img { height: 370px; }.graphics-card-copy h3 { font-size: 23px; }.graphics-modal { padding: 12px; }.graphics-modal > div { padding: 18px; }.graphics-modal h2 { font-size: 32px; } }
+
+/* Personal introduction for the dedicated graphic-design portfolio */
+.graphics-hero-intro { align-items: center; background: #f0eee6; color: #17211c; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); min-height: 700px; padding-bottom: 86px; padding-top: 75px; }
+.graphics-hero-intro::before { background: radial-gradient(ellipse at 79% 48%, rgba(215,244,103,.38), transparent 33%), linear-gradient(122deg, transparent 53%, rgba(23,62,50,.035) 53.1%, transparent 53.4%); }
+.graphics-hero-intro .graphics-hero-copy { max-width: 650px; }
+.graphics-hero-intro .graphics-kicker { color: #198754; }
+.graphics-intro-name { color: #536058; font-family: 'DM Sans', sans-serif !important; font-size: 15px; margin: 32px 0 0; }
+.graphics-intro-name b { color: #17211c; font-weight: 600; }
+.graphics-hero-intro h1 { color: #17211c; font-size: clamp(62px, 7.6vw, 102px); letter-spacing: -.095em; line-height: .86; margin: 19px 0 24px; }
+.graphics-hero-intro h1 em { color: #198754; }
+.graphics-intro-bio { color: #536058; font-family: 'DM Sans', sans-serif !important; font-size: 16px; line-height: 1.7; max-width: 480px; }
+.graphics-hero-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 25px; margin-top: 21px; }
+.graphics-hero-intro .graphics-hero-link { background: #17211c; border: 0; color: #d7f467; margin: 0; padding: 14px 16px; }
+.graphics-hero-intro .graphics-hero-link:hover { background: #198754; }
+.graphics-hero-contact { align-items: center; border-bottom: 1px solid rgba(23,33,28,.35); color: #17211c; display: inline-flex; font-family: 'DM Mono', monospace !important; font-size: 9px; gap: 6px; padding: 0 0 7px; text-transform: uppercase; }
+.graphics-hero-contact:hover { color: #198754; }
+.graphics-portrait-stage { align-items: center; aspect-ratio: 1; display: flex; justify-content: center; margin: 0 auto; max-width: 440px; position: relative; width: 100%; z-index: 1; }
+.graphics-portrait-orbit { border: 1px solid rgba(25,135,84,.3); border-radius: 50%; inset: 4%; position: absolute; transform: rotate(-23deg) scaleY(.76); }
+.graphics-portrait-orbit-two { border-color: rgba(255,116,74,.56); inset: 12% -1%; transform: rotate(25deg) scaleY(.74); }
+.graphics-portrait-circle { background: #d7f467; border: 10px solid #fffdf6; border-radius: 50%; box-shadow: 0 18px 60px rgba(23,33,28,.13); height: 72%; overflow: hidden; position: relative; width: 72%; z-index: 1; }
+.graphics-portrait-circle img { display: block; height: 100%; object-fit: cover; object-position: center 24%; width: 100%; }
+.graphics-portrait-stamp { align-items: center; background: #ff744a; border: 5px solid #f0eee6; border-radius: 50%; color: #17211c; display: flex; font-family: 'DM Mono', monospace !important; font-size: 9px; height: 87px; justify-content: center; letter-spacing: .08em; line-height: 1.35; position: absolute; right: 4%; text-align: center; top: 9%; transform: rotate(11deg); width: 87px; z-index: 2; }
+.graphics-portrait-caption { bottom: 9%; color: #536058; font-family: 'DM Mono', monospace !important; font-size: 8px; letter-spacing: .08em; position: absolute; right: 0; transform: rotate(-7deg); }
+.graphics-portrait-caption i { color: #ff744a; font-style: normal; font-size: 15px; margin-left: 5px; }
+.graphics-portrait-spark { color: #198754; font-size: 46px; left: 5%; position: absolute; top: 17%; transform: rotate(15deg); }
+.graphics-hero-intro .graphics-hero-foot { color: #69736c; }
+.graphics-hero-intro .graphics-hero-foot a { color: #198754; }
+@media (max-width: 780px) { .graphics-hero-intro { display: grid; gap: 24px; grid-template-columns: 1fr; padding-bottom: 104px; padding-top: 74px; }.graphics-hero-intro .graphics-hero-copy { order: 1; }.graphics-portrait-stage { margin: 6px auto 24px; max-width: 350px; order: 2; }.graphics-hero-intro .graphics-hero-foot { bottom: 25px; }.graphics-intro-name { margin-top: 26px; } }
+@media (max-width: 520px) { .graphics-hero-intro { padding-top: 60px; }.graphics-hero-intro h1 { font-size: clamp(55px, 16vw, 78px); }.graphics-intro-name { font-size: 13px; }.graphics-intro-bio { font-size: 14px; }.graphics-portrait-stage { max-width: 290px; }.graphics-portrait-stamp { font-size: 8px; height: 72px; width: 72px; }.graphics-portrait-caption { font-size: 7px; right: -2%; } }
+.graphics-hero-intro .graphics-intro-name { color: #536058; }
+.graphics-hero-intro .graphics-intro-bio { color: #536058; }
