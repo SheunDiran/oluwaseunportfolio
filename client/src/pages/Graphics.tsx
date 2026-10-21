@@ -27,23 +27,18 @@ export default function Graphics() {
   return (
     <SheunShell active="designs">
       <main className="graphics-page">
-        <section className="graphics-hero graphics-hero-intro">
-          <div className="graphics-hero-copy">
-            <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
-            <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
-            <h1>I make ideas<br />impossible<br /><em>to ignore.</em></h1>
-            <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
-            <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
+        <section className="graphics-hero graphics-hero-intro graphics-hero-showcase" aria-label="Oluwaseun Sheun Oyediran, graphic designer">
+          <div className="graphics-showcase-overline"><span>OYEDIRAN SHEUN</span><i /> <span>VISUAL DESIGNER / LAGOS, NG</span></div>
+          <h1 className="graphics-showcase-word">GRAPHIC</h1>
+          <div className="graphics-showcase-portrait"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran" /></div>
+          <h2 className="graphics-showcase-script">Designer<span>.</span></h2>
+          <div className="graphics-showcase-intro">
+            <small>HELLO, I&apos;M OLUWASEUN “SHEUN” OYEDIRAN</small>
+            <p>I create flyers, visual identities and campaign artwork that help good ideas get noticed.</p>
+            <a href="#selected-work">Explore my work <ArrowRight size={14} /></a>
           </div>
-          <div className="graphics-portrait-stage">
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-one" />
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-two" />
-            <div className="graphics-portrait-circle"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran, graphic designer" /></div>
-            <span className="graphics-portrait-stamp">DESIGN<br />WITH<br />PURPOSE</span>
-            <span className="graphics-portrait-caption">THE DESIGNER BEHIND THE WORK <i>↗</i></span>
-            <span className="graphics-portrait-spark" aria-hidden="true">✳</span>
-          </div>
-          <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
+          <div className="graphics-showcase-contact"><span>AVAILABLE FOR SELECT PROJECTS</span><a href="mailto:oluwaseunoyediran641@gmail.com">LET&apos;S MAKE SOMETHING <ArrowUpRight size={13} /></a></div>
+          <div className="graphics-showcase-coordinate"><span>06° 27&apos; N</span><i /> <span>03° 24&apos; E</span></div>
         </section>
 
         <section className="graphics-intro graphics-manifesto">
