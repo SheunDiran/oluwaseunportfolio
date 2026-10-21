@@ -1,17 +1,61 @@
-import { useState } from "react";
-import { ArrowRight, ArrowUpRight, ExternalLink, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, ArrowUpRight, Plus, X } from "lucide-react";
 import SheunShell, { SheunFooter } from "@/components/SheunShell";
 
-const designs = [
-  ["Praise Tent Logo Design", "/manus-storage/praise-tent-2_d138656a_86878090.jpg", "Brand identity", "A modern logo system for a mission-driven enterprise."],
-  ["Praise Tent Campaign Flyer", "/manus-storage/relaunch_0c2f3aa9_e021773d.jpg", "Campaign direction", "A promotional flyer built around energy, clarity and a strong call to action."],
-  ["Graduation Ceremony", "/manus-storage/bgp_8b11fde0_fdc60cc4.jpeg", "Event story", "A celebratory composition for a graduation ceremony."],
-  ["House Fellowship", "/manus-storage/fellowship_d7cfddf9_f4e0970d.jpeg", "Community identity", "A visual package designed to create belonging and shared rhythm."],
-  ["Announcement", "/manus-storage/announcement_4c31428c_549958f3.jpeg", "Communication", "A design that makes an important message difficult to miss."],
-  ["Thanksgiving Poster", "/manus-storage/thanksgiving_ff3a5ee2_7f0114b8.jpeg", "Editorial poster", "A warm event design shaped around gratitude and community."],
-] as const;
+type Design = { title: string; imagePath: string; type: string; description: string };
 
 export default function Graphics() {
-  const [selected, setSelected] = useState<(typeof designs)[number] | null>(null);
-  return <SheunShell active="designs"><main className="graphics-page"><section className="graphics-hero"><div><small>DESIGN / 05</small><h1>Visuals that<br /><em>make meaning</em><br />visible.</h1><p>Identity, campaign and event work made to give an idea a clear face, a stronger feeling and somewhere to land.</p></div><div className="graphics-hero-index"><span>THE ARCHIVE</span><strong>06</strong><small>SELECTED VISUAL STUDIES</small></div></section><section className="graphics-intro"><div><small>THE DESIGN PRACTICE / 01</small><h2>Not decoration.<br /><em>Direction.</em></h2></div><p>I use design to create a moment of recognition: the right colour, the right emphasis, the right visual cue for what matters next.</p></section><section className="graphics-gallery"><div className="graphics-gallery-head"><div><small>SELECTED WORK / 02</small><h2>A visual<br /><em>working archive.</em></h2></div><span>Click any piece to study it closer <ArrowRight size={14} /></span></div><div className="graphics-gallery-grid">{designs.map((design, index) => <article className={`graphics-gallery-card graphics-gallery-card-${index + 1}`} key={design[0]}><button type="button" onClick={() => setSelected(design)}><div className="graphics-image-wrap"><img src={design[1]} alt={design[0]} /><span>0{index + 1}</span></div><div className="graphics-card-copy"><small>{design[2]}</small><h3>{design[0]}</h3><span>View piece <ArrowUpRight size={14} /></span></div></button></article>)}</div></section><section className="graphics-cta"><small>DESIGN WITH A JOB TO DO?</small><h2>Let&apos;s make the<br /><em>next idea visible.</em></h2><a href="/contact.html">Start a conversation <ArrowUpRight size={15} /></a></section></main>{selected && <div className="graphics-modal" role="dialog" aria-modal="true" onClick={() => setSelected(null)}><div onClick={(event) => event.stopPropagation()}><button className="graphics-close" type="button" onClick={() => setSelected(null)} aria-label="Close design"><X /></button><small>{selected[2]}</small><h2>{selected[0]}</h2><img src={selected[1]} alt={selected[0]} /><p>{selected[3]}</p><a href="/contact.html">Work on a visual direction <ArrowUpRight size={14} /></a></div></div>}<SheunFooter /></SheunShell>;
+  const [designs, setDesigns] = useState<Design[]>([]);
+  const [selected, setSelected] = useState<Design | null>(null);
+  const [ownerSession, setOwnerSession] = useState(false);
+
+  useEffect(() => {
+    const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
+    setOwnerSession(unlockedUntil > Date.now());
+    fetch("/designs.json")
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data: unknown) => setDesigns(Array.isArray(data) ? data : []))
+      .catch(() => setDesigns([]));
+  }, []);
+
+  return (
+    <SheunShell active="designs">
+      <main className="graphics-page">
+        <section className="graphics-hero">
+          <div>
+            <small>DESIGN / VISUAL COMMUNICATION</small>
+            <h1>Visuals that<br /><em>make meaning</em><br />visible.</h1>
+            <p>Flyers, identities and event artwork made to give ideas a clear face, a stronger feeling and somewhere to land.</p>
+          </div>
+          <div className="graphics-hero-index"><span>THE ARCHIVE</span><strong>{String(designs.length).padStart(2, "0")}</strong><small>SELECTED VISUAL WORKS</small></div>
+        </section>
+        <section className="graphics-intro">
+          <div><small>THE DESIGN PRACTICE / 01</small><h2>Not decoration.<br /><em>Direction.</em></h2></div>
+          <p>I use design to create a moment of recognition: the right colour, the right emphasis, the right visual cue for what matters next.</p>
+        </section>
+        <section className="graphics-gallery">
+          <div className="graphics-gallery-head">
+            <div><small>SELECTED WORK / 02</small><h2>A visual<br /><em>working archive.</em></h2></div>
+            <span>Click any piece to study it closer <ArrowRight size={14} /></span>
+          </div>
+          {ownerSession && <a className="graphics-owner-add" href="/admin"><Plus size={15} /> Add a design <span>PRIVATE OWNER VIEW</span></a>}
+          {designs.length ? (
+            <div className="graphics-gallery-grid">
+              {designs.map((design, index) => (
+                <article className={`graphics-gallery-card graphics-gallery-card-${(index % 6) + 1}`} key={`${design.title}-${design.imagePath}`}>
+                  <button type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
+                    <div className="graphics-image-wrap"><img src={design.imagePath} alt={design.title} loading="lazy" /><span>{String(index + 1).padStart(2, "0")}</span></div>
+                    <div className="graphics-card-copy"><small>{design.type}</small><h3>{design.title}</h3><span>View piece <ArrowUpRight size={14} /></span></div>
+                  </button>
+                </article>
+              ))}
+            </div>
+          ) : <p className="graphics-empty">New pieces are being prepared for the archive. Please check back soon.</p>}
+        </section>
+        <section className="graphics-cta"><small>DESIGN WITH A JOB TO DO?</small><h2>Let&apos;s make the<br /><em>next idea visible.</em></h2><a href="/contact.html">Start a conversation <ArrowUpRight size={15} /></a></section>
+      </main>
+      {selected && <div className="graphics-modal" role="dialog" aria-modal="true" aria-label={selected.title} onClick={() => setSelected(null)}><div onClick={(event) => event.stopPropagation()}><button className="graphics-close" type="button" onClick={() => setSelected(null)} aria-label="Close design"><X /></button><small>{selected.type}</small><h2>{selected.title}</h2><img src={selected.imagePath} alt={selected.title} /><p>{selected.description}</p><a href="/contact.html">Work on a visual direction <ArrowUpRight size={14} /></a></div></div>}
+      <SheunFooter />
+    </SheunShell>
+  );
 }

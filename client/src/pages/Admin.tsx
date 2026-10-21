@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, Check, Github, LockKeyhole, Plus, Upload, X } from "lucide-react";
 import { Link } from "wouter";
 
-const DEFAULT_CONFIG = { repo: "", branch: "main", dataPath: "client/public/designs.json", token: "" };
+const DEFAULT_CONFIG = { repo: "SheunDiran/oluwaseunportfolio", branch: "main", dataPath: "client/public/designs.json", token: "" };
 
 type Config = typeof DEFAULT_CONFIG;
 
@@ -80,7 +80,7 @@ export default function Admin() {
       localStorage.setItem("dhub-github-config", JSON.stringify({ ...config, token: config.token }));
       setDesigns(nextDesigns);
       setForm({ title: "", description: "", type: "Visual study", file: null });
-      setStatus({ kind: "success", text: "Design committed. GitHub Pages will rebuild from the new commit." });
+      setStatus({ kind: "success", text: "Design committed. The connected site will rebuild from the new commit." });
     } catch (error) {
       setStatus({ kind: "error", text: error instanceof Error ? error.message : "Something went wrong while committing." });
     }
