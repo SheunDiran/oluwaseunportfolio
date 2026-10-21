@@ -1607,3 +1607,8 @@ img {
 /* Retained personal introduction follows the statement-led reference hero. */
 .graphics-hero-followup { min-height: 620px; }
 @media (max-width: 780px) { .graphics-hero-followup { min-height: 0; } }
+
+/* Keep the display word larger than the portrait so its edges frame the image. */
+.graphics-hero-showcase .graphics-showcase-word { color: #171916; font-size: clamp(124px, 20vw, 268px); letter-spacing: -.095em; line-height: .78; margin: 0; transform: translateX(-50%) scaleX(.9); }
+@media (max-width: 780px) { .graphics-hero-showcase .graphics-showcase-word { font-size: clamp(102px, 21vw, 166px); } }
+@media (max-width: 520px) { .graphics-hero-showcase .graphics-showcase-word { font-size: clamp(85px, 19vw, 112px); } }
