@@ -1327,33 +1327,10 @@ img {
   object-position: center;
 }
 
-/* Portfolio refresh: portrait-led home hero and a shared, expandable design archive. */
-.sheun-hero { align-items: center; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); }
-.home-hero-portrait { align-items: center; display: flex; flex-direction: column; grid-column: 2; grid-row: 1; justify-content: center; min-width: 0; position: relative; z-index: 1; }
-.home-portrait-frame { background: #d7f467; max-width: 430px; overflow: hidden; padding: 10px; position: relative; transform: rotate(2deg); width: min(100%, 390px); }
-.home-portrait-frame::before { border: 1px solid rgba(23,33,28,.45); content: ''; inset: 18px; pointer-events: none; position: absolute; z-index: 1; }
-.home-portrait-frame img { display: block; height: clamp(390px, 43vw, 510px); object-fit: cover; object-position: center 28%; width: 100%; }
-.home-portrait-stamp { background: #17211c; bottom: 29px; color: #d7f467; font-family: 'DM Mono', monospace !important; font-size: 8px; letter-spacing: .08em; line-height: 1.65; padding: 10px 12px; position: absolute; right: 25px; z-index: 2; }
-.home-portrait-caption { align-self: flex-end; color: #d7f467; font-family: 'DM Mono', monospace !important; font-size: 9px; letter-spacing: .08em; margin: 24px 5% 0 0; }
-.home-portrait-caption i { color: #ff744a; font-style: normal; }
-.sheun-home-index { grid-template-columns: repeat(5, 1fr); }
+
+/* Owner-only gallery control. */
 .graphics-owner-add { align-items: center; background: #17211c; color: #d7f467; display: inline-flex; font-family: 'DM Mono', monospace !important; font-size: 10px; gap: 9px; margin: 0 0 28px; padding: 12px 15px; text-decoration: none; text-transform: uppercase; }
 .graphics-owner-add:hover { background: #198754; color: #fff; }
 .graphics-owner-add span { border-left: 1px solid rgba(215,244,103,.45); font-size: 8px; margin-left: 4px; padding-left: 12px; }
 .graphics-empty { background: #f0f2ec; color: #607066; font-family: 'DM Sans', sans-serif !important; padding: 32px; }
-@media (max-width: 900px) { .sheun-home-index { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 780px) {
-  .sheun-hero { align-items: stretch; }
-  .home-hero-portrait { grid-column: auto; grid-row: auto; order: 1; width: 100%; }
-  .home-portrait-frame { margin: 0 auto; width: min(78%, 330px); }
-  .home-portrait-frame img { height: clamp(300px, 80vw, 390px); }
-  .home-portrait-caption { margin-right: 8%; }
-  .sheun-home-index { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 520px) {
-  .home-portrait-frame { margin-left: 20px; width: min(72%, 260px); }
-  .home-portrait-frame img { height: 310px; }
-  .home-portrait-stamp { font-size: 7px; right: 18px; }
-  .home-portrait-caption { font-size: 8px; margin-top: 18px; }
-  .graphics-owner-add { align-items: flex-start; flex-wrap: wrap; }
-}
+@media (max-width: 520px) { .graphics-owner-add { align-items: flex-start; flex-wrap: wrap; } }

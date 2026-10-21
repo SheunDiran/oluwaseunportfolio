@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowDownToLine, ArrowRight, ArrowUpRight, Linkedin, Quote, SkipForward } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, ArrowUpRight, Braces, Database, Gauge, Layers, Linkedin, Quote, Server, SkipForward } from "lucide-react";
 import SheunShell, { SheunFooter } from "@/components/SheunShell";
 
 const techVisual = "/images/tech_workspace.jpg";
@@ -123,20 +123,63 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="home-hero-portrait" aria-label="Portrait of Oluwaseun Sheun Oyediran">
-              <div className="home-portrait-frame">
-                <img src="/manus-storage/myface_df9a62aa.jpeg" alt="Oluwaseun Sheun Oyediran" />
-                <span className="home-portrait-stamp">LAGOS, NG<br />AVAILABLE FOR OPPORTUNITIES</span>
+            <aside className="sheun-hero-side" aria-label="Technology stack snapshot">
+              <div className="sheun-hero-side-top"><span>THE BUILDING STACK / 01</span><i /></div>
+              <div className="sheun-hero-side-screen">
+                <span className="sheun-code-line"><b>01</b> const <em>usefulWork</em> = () =&gt; {'{'}</span>
+                <span className="sheun-code-line indent"><b>02</b> build(<strong>&quot;for people&quot;</strong>);</span>
+                <span className="sheun-code-line indent"><b>03</b> teach(<strong>&quot;what works&quot;</strong>);</span>
+                <span className="sheun-code-line"><b>04</b> {'}'}</span>
+                <div className="sheun-stack-orbit"><span><Braces size={15} /> CSS</span><span><Braces size={15} /> HTML</span><span><Database size={15} /> SQL</span><span><Server size={15} /> PYTHON</span></div>
               </div>
-              <span className="home-portrait-caption">THE PERSON BEHIND THE WORK <i> / 001</i></span>
+              <div className="sheun-hero-side-copy"><strong>CODE.<br /><em>CONNECT.</em><br />SHIP.</strong><p>Interfaces, logic, data and the systems that hold them together.</p></div>
+              <div className="sheun-hero-side-tags"><span>CSS / HTML</span><span>PYTHON / FLASK</span><span>SQL / DATABASE</span></div>
             </aside>
+
+            <div className="sheun-hero-frontscreen" aria-label="Sheun's front screen showcase">
+              <div className="sheun-frontscreen-header">
+                <div className="sheun-frontscreen-pill">
+                  <span className="sheun-pulse-dot" />
+                  <span>OYEDIRAN SHEUN</span>
+                </div>
+                <span className="sheun-frontscreen-loc">LAGOS, NIGERIA · LIVE PRACTICE</span>
+              </div>
+
+              <div className="sheun-orbit-stage">
+                <div className="sheun-orbit-ring sheun-orbit-ring-one" />
+                <div className="sheun-orbit-ring sheun-orbit-ring-two" />
+                <div className="sheun-orbit-core">
+                  <span>BUILD</span>
+                  <span>THE</span>
+                  <em>WHOLE</em>
+                  <span>THING.</span>
+                </div>
+                <div className="sheun-orbit-node sheun-node-interface"><Layers size={15} /><span>INTERFACE</span></div>
+                <div className="sheun-orbit-node sheun-node-logic"><Braces size={15} /><span>LOGIC</span></div>
+                <div className="sheun-orbit-node sheun-node-data"><Database size={15} /><span>DATA</span></div>
+                <div className="sheun-orbit-node sheun-node-operations"><Gauge size={15} /><span>OPERATIONS</span></div>
+              </div>
+
+              <div className="sheun-studio-metrics">
+                <div><strong>30+</strong><span>developers trained</span></div>
+                <div><strong>05</strong><span>products shipped</span></div>
+                <div><strong>04</strong><span>systems profiled</span></div>
+                <div><strong>01</strong><span>integrated practice</span></div>
+              </div>
+
+              <div className="sheun-studio-marquee">
+                <div className="sheun-marquee-track">
+                  <span>STRATEGY</span><i>•</i><span>SYSTEM DESIGN</span><i>•</i><span>BUILD</span><i>•</i><span>OPERATE</span><i>•</i>
+                  <span>STRATEGY</span><i>•</i><span>SYSTEM DESIGN</span><i>•</i><span>BUILD</span><i>•</i><span>OPERATE</span><i>•</i>
+                </div>
+              </div>
+            </div>
           </section>
           <section className="sheun-home-index" aria-label="Explore the portfolio">
             <a href="/about.html"><small>01</small><h2>About Sheun</h2><p>The person behind the products, lessons and community work.</p><span>Read the story <ArrowRight size={14} /></span></a>
             <a href="/skills.html"><small>02</small><h2>My Skills</h2><p>Python, Flask, JavaScript, React, MySQL and the tools in between.</p><span>See the toolkit <ArrowRight size={14} /></span></a>
             <a href="/projects.html"><small>03</small><h2>Working Experience</h2><p>Real platforms, experiments and thoughtful problem-solving.</p><span>View selected work <ArrowRight size={14} /></span></a>
-            <a href="/designs"><small>04</small><h2>Flyers &amp; Visual Design</h2><p>Flyers, event artwork and visual identities from my design practice.</p><span>Explore design work <ArrowRight size={14} /></span></a>
-            <a href="/training.html"><small>05</small><h2>Training &amp; Speaking</h2><p>How the work extends beyond a screen and into other people.</p><span>Explore the practice <ArrowRight size={14} /></span></a>
+            <a href="/training.html"><small>04</small><h2>Training &amp; Speaking</h2><p>How the work extends beyond a screen and into other people.</p><span>Explore the practice <ArrowRight size={14} /></span></a>
           </section>
           <section className="sheun-hook-section">
             <div className="sheun-hook-intro"><span className="sheun-home-kicker">A LITTLE CONTEXT</span><h2>Good work should<br /><em>leave a mark.</em></h2><p>Not just a polished interface. A useful answer, a clearer next step, a learner who finally gets it.</p></div>
