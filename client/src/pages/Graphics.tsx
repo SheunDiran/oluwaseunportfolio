@@ -46,9 +46,23 @@ export default function Graphics() {
           <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
         </section>
 
-        <section className="graphics-intro">
-          <div><small>THE DESIGN PRACTICE / 01</small><h2>Not decoration.<br /><em>Direction.</em></h2></div>
-          <p>Good graphics do more than fill a space. They help people notice, understand and feel something. I bring thoughtful composition and a strong point of view to every brief, from a one-off flyer to a complete visual identity.</p>
+        <section className="graphics-intro graphics-manifesto">
+          <div className="graphics-manifesto-copy">
+            <small>THE DESIGN POINT OF VIEW / 01</small>
+            <h2>Not decoration.<br /><em>Direction.</em></h2>
+            <p>Good graphics do more than fill a space. They help people notice, understand and feel something. I bring thoughtful composition and a strong point of view to every brief, from a one-off flyer to a complete visual identity.</p>
+            <span className="graphics-manifesto-signoff">A FEW THINGS I&apos;VE MADE <i>↗</i></span>
+          </div>
+          <div className="graphics-manifesto-collage" aria-label="A preview of selected design work">
+            {designs.slice(0, 3).map((design, index) => (
+              <button className={`graphics-manifesto-card graphics-manifesto-card-${index + 1}`} key={design.imagePath} type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
+                <img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" />
+                <span><b>0{index + 1}</b> {design.type}</span>
+              </button>
+            ))}
+            <span className="graphics-collage-star" aria-hidden="true">✳</span>
+            <span className="graphics-collage-label">FORM / COLOUR / FEELING</span>
+          </div>
         </section>
 
         <section className="graphics-gallery" id="selected-work">

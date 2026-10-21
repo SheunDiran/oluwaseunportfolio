@@ -1549,3 +1549,30 @@ img {
 @media (max-width: 520px) { .graphics-hero-intro { padding-top: 60px; }.graphics-hero-intro h1 { font-size: clamp(55px, 16vw, 78px); }.graphics-intro-name { font-size: 13px; }.graphics-intro-bio { font-size: 14px; }.graphics-portrait-stage { max-width: 290px; }.graphics-portrait-stamp { font-size: 8px; height: 72px; width: 72px; }.graphics-portrait-caption { font-size: 7px; right: -2%; } }
 .graphics-hero-intro .graphics-intro-name { color: #536058; }
 .graphics-hero-intro .graphics-intro-bio { color: #536058; }
+
+/* A compact, clickable work collage breaks up the introduction and gallery. */
+.graphics-manifesto { align-items: center; background: #17211c; color: #f6f7ee; gap: 8%; grid-template-columns: .88fr 1.12fr; min-height: 560px; overflow: hidden; padding-bottom: 82px; padding-top: 82px; position: relative; }
+.graphics-manifesto::after { border: 1px solid rgba(215,244,103,.14); border-radius: 50%; content: ""; height: 510px; pointer-events: none; position: absolute; right: -155px; top: 10px; width: 510px; }
+.graphics-manifesto-copy { position: relative; z-index: 1; }
+.graphics-manifesto-copy > small { color: #d7f467; font-family: 'DM Mono', monospace !important; font-size: 8px; letter-spacing: .12em; }
+.graphics-manifesto h2 { color: #f6f7ee; font-size: clamp(47px, 5.5vw, 72px); line-height: .9; margin: 28px 0 24px; }
+.graphics-manifesto h2 em { color: #d7f467; }
+.graphics-manifesto-copy > p { color: rgba(246,247,238,.7); font-family: 'DM Sans', sans-serif !important; font-size: 15px; line-height: 1.75; max-width: 420px; }
+.graphics-manifesto-signoff { color: rgba(246,247,238,.58); display: block; font-family: 'DM Mono', monospace !important; font-size: 8px; letter-spacing: .1em; margin-top: 30px; }
+.graphics-manifesto-signoff i { color: #ff744a; font-size: 14px; font-style: normal; margin-left: 8px; }
+.graphics-manifesto-collage { height: 410px; justify-self: end; max-width: 550px; position: relative; width: 100%; z-index: 1; }
+.graphics-manifesto-card { background: #f6f4ec; border: 7px solid #f6f4ec; box-shadow: 0 22px 50px rgba(0,0,0,.24); cursor: pointer; overflow: hidden; padding: 0; position: absolute; transition: transform .25s ease, box-shadow .25s ease; }
+.graphics-manifesto-card:hover { box-shadow: 0 28px 58px rgba(0,0,0,.38); z-index: 4; }
+.graphics-manifesto-card img { background: #e8e5dc; display: block; height: 100%; object-fit: contain; width: 100%; }
+.graphics-manifesto-card > span { align-items: center; background: #f6f4ec; bottom: 0; color: #26352c; display: flex; font-family: 'DM Mono', monospace !important; font-size: 7px; gap: 7px; left: 0; letter-spacing: .06em; padding: 9px 8px 3px; position: absolute; right: 0; text-align: left; text-transform: uppercase; }
+.graphics-manifesto-card > span b { color: #198754; font-size: 8px; }
+.graphics-manifesto-card-1 { height: 76%; left: 7%; top: 11%; transform: rotate(-7deg); width: 43%; z-index: 2; }
+.graphics-manifesto-card-1:hover { transform: rotate(-3deg) translateY(-5px); }
+.graphics-manifesto-card-2 { height: 67%; right: 8%; top: 0; transform: rotate(6deg); width: 39%; z-index: 1; }
+.graphics-manifesto-card-2:hover { transform: rotate(2deg) translateY(-5px); }
+.graphics-manifesto-card-3 { bottom: 1%; height: 61%; right: 4%; transform: rotate(-3deg); width: 42%; z-index: 3; }
+.graphics-manifesto-card-3:hover { transform: rotate(0) translateY(-5px); }
+.graphics-collage-star { color: #ff744a; font-size: 43px; left: 4%; position: absolute; top: 1%; transform: rotate(16deg); }
+.graphics-collage-label { bottom: 3%; color: #d7f467; font-family: 'DM Mono', monospace !important; font-size: 7px; left: 1%; letter-spacing: .12em; position: absolute; transform: rotate(-90deg); transform-origin: left; }
+@media (max-width: 780px) { .graphics-manifesto { display: grid; gap: 45px; grid-template-columns: 1fr; padding-bottom: 65px; padding-top: 70px; }.graphics-manifesto-collage { justify-self: center; max-width: 490px; width: 95%; } }
+@media (max-width: 520px) { .graphics-manifesto { gap: 28px; }.graphics-manifesto h2 { font-size: 50px; }.graphics-manifesto-copy > p { font-size: 14px; }.graphics-manifesto-collage { height: 320px; max-width: 360px; }.graphics-manifesto-card { border-width: 5px; }.graphics-manifesto-card > span { font-size: 6px; padding: 7px 5px 2px; }.graphics-collage-label { font-size: 6px; } }
