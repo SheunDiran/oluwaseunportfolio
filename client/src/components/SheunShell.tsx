@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { ArrowUpRight, Menu, MessageCircle, X } from "lucide-react";
 import FeedbackDrawer from "./FeedbackDrawer";
 
-const face = "/images/sheun_portrait.jpg";
+const face = "/images/about-sheun-portrait.jpeg";
 
 export default function SheunShell({ children, active }: { children: ReactNode; active?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
