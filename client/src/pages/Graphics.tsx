@@ -4,13 +4,14 @@ import "./Graphics.css";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import SheunShell from "@/components/SheunShell";
 
-type Design = { title: string; imagePath: string; type: string; description: string; tags?: string[] };
+type Design = { title: string; imagePath: string; type: string; description?: string; tags?: string[] };
 type Testimonial = { quote: string; name: string; organisation: string };
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 const categories = ["Flyers & Posters", "Social Media", "Branding"];
 
 function categoryFor(design: Design) {
+  if (categories.includes(design.type)) return design.type;
   const text = [design.type, ...(design.tags || [])].join(" ").toLowerCase();
   if (/social|communication|announcement|content/.test(text)) return "Social Media";
   if (/brand|community|identity|logo/.test(text)) return "Branding";
@@ -50,12 +51,19 @@ export default function Graphics() {
 
   useEffect(() => {
     const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
-    let hasPortfolioWriteAccess = false;
+    const controller = new AbortController();
+    let expiryTimer: ReturnType<typeof setTimeout> | undefined;
+    setOwnerSession(false);
     try {
       const savedConfig = JSON.parse(localStorage.getItem("dhub-github-config") || "{}");
-      hasPortfolioWriteAccess = savedConfig.repo === "SheunDiran/oluwaseunportfolio" && typeof savedConfig.token === "string" && savedConfig.token.length > 0;
-    } catch { hasPortfolioWriteAccess = false; }
-    setOwnerSession(unlockedUntil > Date.now() && hasPortfolioWriteAccess);
+      if (unlockedUntil > Date.now() && savedConfig.repo === "SheunDiran/oluwaseunportfolio" && typeof savedConfig.token === "string" && savedConfig.token) {
+        fetch("https://api.github.com/repos/SheunDiran/oluwaseunportfolio", { headers: { Authorization: `Bearer ${savedConfig.token}`, Accept: "application/vnd.github+json" }, signal: controller.signal })
+          .then(response => response.ok ? response.json() : null)
+          .then(repo => { if (!controller.signal.aborted && Date.now() < unlockedUntil && repo?.permissions?.push === true) setOwnerSession(true); })
+          .catch(() => undefined);
+        expiryTimer = setTimeout(() => setOwnerSession(false), unlockedUntil - Date.now());
+      }
+    } catch { setOwnerSession(false); }
     fetch(publicAsset("/designs.json"))
       .then((response) => (response.ok ? response.json() : []))
       .then((data: unknown) => setDesigns(Array.isArray(data) ? data : []))
@@ -64,6 +72,7 @@ export default function Graphics() {
       .then((response) => (response.ok ? response.json() : []))
       .then((data: unknown) => setTestimonials(Array.isArray(data) ? data : []))
       .catch(() => setTestimonials([]));
+    return () => { controller.abort(); if (expiryTimer) clearTimeout(expiryTimer); };
   }, []);
 
   const filters = useMemo(() => ["All work", ...categories, ...(designs.some((design) => categoryFor(design) === "Other") ? ["Other"] : [])], [designs]);
@@ -119,7 +128,7 @@ export default function Graphics() {
         <section className="graphics-gallery graphics-selected-work" id="selected-work">
           <div className="graphics-gallery-head">
             <div><small>WORK</small><h2>Selected work</h2><p>Flyers, social content and visual identities.</p></div>
-            {ownerSession && <a className="graphics-owner-preview" href="/admin" aria-label="Open owner preview and add a design"><span><Plus size={22} /></span><small>Owner preview</small></a>}
+            {ownerSession && <a className="graphics-owner-preview" href="/admin" aria-label="Open owner preview and add a design"><span><Plus size={22} /></span><small>Add pictures</small></a>}
           </div>
           {designs.length > 0 && <div className="graphics-filter-row">
             <div className="graphics-filters" role="group" aria-label="Filter designs by category">
@@ -164,7 +173,7 @@ export default function Graphics() {
       </main>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="graphics-viewer">
-          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription>{selected.description}</DialogDescription>{selected.tags?.length ? <div className="graphics-viewer-tags" aria-label="Project tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}<a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
+          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription className={selected.description ? "" : "sr-only"}>{selected.description || `Full artwork: ${selected.title}`}</DialogDescription>{selected.tags?.length ? <div className="graphics-viewer-tags" aria-label="Project tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}<a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
         </DialogContent>
       </Dialog>
       <GraphicFooter />
