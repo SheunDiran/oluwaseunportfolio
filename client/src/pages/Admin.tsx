@@ -58,10 +58,10 @@ export default function Admin() {
       status("Publishing your designs…");
       const result = await studioRequest({ action: "designs", items });
       setDesigns(result.items); tickets.current.clear(); setDrafts([blank()]);
-      status(`${items.length} design${items.length === 1 ? "" : "s"} saved. They’ll appear in the gallery when the site finishes updating.`);
+      status(`${items.length} design${items.length === 1 ? "" : "s"} saved. They’re available in your gallery now.`);
     } catch (error) { status((error as Error).message, true); } finally { setBusy(false); }
   }
-  async function publishQuote(event: FormEvent) { event.preventDefault(); setBusy(true); status("Saving testimonial…"); try { const result = await studioRequest({ action: "testimonial", ...quote }); setTestimonials(result.items); setQuote({ quote: "", name: "", organisation: "" }); status("Testimonial saved. The site is updating."); } catch (error) { status((error as Error).message, true); } finally { setBusy(false); } }
+  async function publishQuote(event: FormEvent) { event.preventDefault(); setBusy(true); status("Saving testimonial…"); try { const result = await studioRequest({ action: "testimonial", ...quote }); setTestimonials(result.items); setQuote({ quote: "", name: "", organisation: "" }); status("Testimonial saved and published."); } catch (error) { status((error as Error).message, true); } finally { setBusy(false); } }
   const feedback = message && <p className={`studio-status ${failed ? "is-error" : ""}`} role="status" aria-live="polite">{message}</p>;
   if (loading) return <main className="studio-page"><p>Opening your studio…</p></main>;
   if (!signedIn) return <main className="studio-page studio-login"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> Back to portfolio</a><section className="studio-panel"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Welcome back.</h1><p>Log in to add designs and testimonials.</p>{feedback}{!setupNeeded && <form onSubmit={login}><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Log in"}</button></form>}</section></main>;

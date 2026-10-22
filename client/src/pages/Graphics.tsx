@@ -55,14 +55,14 @@ export default function Graphics() {
       .then(response => response.ok ? response.json() : null)
       .then(data => { if (!controller.signal.aborted) setOwnerSession(data?.authenticated === true); })
       .catch(() => setOwnerSession(false));
-    fetch(publicAsset("/designs.json"))
-      .then((response) => (response.ok ? response.json() : []))
-      .then((data: unknown) => setDesigns(Array.isArray(data) ? data : []))
-      .catch(() => setDesigns([]));
-    fetch(publicAsset("/testimonials.json"))
-      .then((response) => (response.ok ? response.json() : []))
-      .then((data: unknown) => setTestimonials(Array.isArray(data) ? data : []))
-      .catch(() => setTestimonials([]));
+    fetch("/api/gallery", { cache: "no-store", signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error("Gallery unavailable"); return response.json(); })
+      .then(data => { setDesigns(data.designs); setTestimonials(data.testimonials); })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        fetch(publicAsset("/designs.json")).then(r => r.json()).then(setDesigns).catch(() => {});
+        fetch(publicAsset("/testimonials.json")).then(r => r.json()).then(setTestimonials).catch(() => {});
+      });
     return () => controller.abort();
   }, []);
 
