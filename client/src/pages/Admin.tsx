@@ -75,7 +75,7 @@ export default function Admin() {
       const imagePath = `client/public/designs/${slug}-${Date.now()}.${form.file.name.split(".").pop() || "png"}`;
       await commitFile(config, imagePath, btoa(binary), `Add design: ${form.title}`, true);
       const nextDesign = { title: form.title, description: form.description, type: form.type, imagePath: `/${imagePath.replace("client/public/", "")}` };
-      const nextDesigns = [...designs, nextDesign];
+      const nextDesigns = [nextDesign, ...designs];
       await commitFile(config, config.dataPath, JSON.stringify(nextDesigns, null, 2), `Update D-HUB design archive`);
       localStorage.setItem("dhub-github-config", JSON.stringify({ ...config, token: config.token }));
       setDesigns(nextDesigns);

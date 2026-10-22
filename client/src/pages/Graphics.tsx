@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, Plus, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import SheunShell, { SheunFooter } from "@/components/SheunShell";
 
 type Design = { title: string; imagePath: string; type: string; description: string };
@@ -11,6 +12,8 @@ export default function Graphics() {
   const [selected, setSelected] = useState<Design | null>(null);
   const [ownerSession, setOwnerSession] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All work");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   useEffect(() => {
     const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
@@ -24,14 +27,29 @@ export default function Graphics() {
   const filters = useMemo(() => ["All work", ...Array.from(new Set(designs.map((design) => design.type)))], [designs]);
   const visibleDesigns = activeFilter === "All work" ? designs : designs.filter((design) => design.type === activeFilter);
 
+  const pageCount = Math.max(1, Math.ceil(visibleDesigns.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pagedDesigns = visibleDesigns.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <SheunShell active="designs">
       <main className="graphics-page">
+        <section className="graphics-cover" aria-labelledby="graphics-cover-title">
+          <div className="graphics-cover-top"><span>OLUWASEUN OYEDIRAN / D-HUB</span><span>INDEPENDENT DESIGNER · LAGOS</span></div>
+          <p className="graphics-cover-hello">Ideas deserve to be seen.</p>
+          <h1 id="graphics-cover-title">GRAPHIC<br /><em>DESIGNER.</em></h1>
+          <div className="graphics-cover-bottom">
+            <p>I’m Sheun. I turn ideas into bold visuals for brands, events and communities.</p>
+            <a href="#selected-work">Explore my work <ArrowUpRight size={22} /></a>
+            <span className="graphics-cover-star" aria-hidden="true">✳</span>
+          </div>
+          <div className="graphics-cover-strip" aria-hidden="true">BRAND IDENTITY <span>✳</span> EVENT ARTWORK <span>✳</span> CAMPAIGN DESIGN <span>✳</span> VISUAL STORYTELLING</div>
+        </section>
         <section className="graphics-hero graphics-hero-intro">
           <div className="graphics-hero-copy">
             <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
             <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
-            <h1>I make ideas<br />impossible<br /><em>to ignore.</em></h1>
+            <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
             <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
             <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
           </div>
@@ -48,25 +66,6 @@ export default function Graphics() {
 
 
 
-        <section className="graphics-intro graphics-manifesto">
-          <div className="graphics-manifesto-copy">
-            <small>THE DESIGN POINT OF VIEW / 01</small>
-            <h2>Not decoration.<br /><em>Direction.</em></h2>
-            <p>Good graphics do more than fill a space. They help people notice, understand and feel something. I bring thoughtful composition and a strong point of view to every brief, from a one-off flyer to a complete visual identity.</p>
-            <span className="graphics-manifesto-signoff">A FEW THINGS I&apos;VE MADE <i>↗</i></span>
-          </div>
-          <div className="graphics-manifesto-collage" aria-label="A preview of selected design work">
-            {designs.slice(0, 3).map((design, index) => (
-              <button className={`graphics-manifesto-card graphics-manifesto-card-${index + 1}`} key={design.imagePath} type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
-                <img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" />
-                <span><b>0{index + 1}</b> {design.type}</span>
-              </button>
-            ))}
-            <span className="graphics-collage-star" aria-hidden="true">✳</span>
-            <span className="graphics-collage-label">FORM / COLOUR / FEELING</span>
-          </div>
-        </section>
-
         <section className="graphics-gallery" id="selected-work">
           <div className="graphics-gallery-head">
             <div><small>SELECTED WORK / 02</small><h2>A visual<br /><em>working archive.</em></h2></div>
@@ -76,7 +75,7 @@ export default function Graphics() {
             <span className="graphics-filter-label">BROWSE BY DISCIPLINE</span>
             <div className="graphics-filters" role="group" aria-label="Filter designs by category">
               {filters.map((filter) => (
-                <button key={filter} className={activeFilter === filter ? "is-active" : ""} type="button" aria-pressed={activeFilter === filter} onClick={() => setActiveFilter(filter)}>
+                <button key={filter} className={activeFilter === filter ? "is-active" : ""} type="button" aria-pressed={activeFilter === filter} onClick={() => { setActiveFilter(filter); setPage(1); }}>
                   {filter === "All work" ? "All work" : filter}<span>{filter === "All work" ? designs.length : designs.filter((design) => design.type === filter).length}</span>
                 </button>
               ))}
@@ -85,21 +84,30 @@ export default function Graphics() {
           {ownerSession && <a className="graphics-owner-add" href="/admin"><Plus size={15} /> Add a design <span>OWNER SESSION</span></a>}
           {visibleDesigns.length ? (
             <div className="graphics-gallery-grid">
-              {visibleDesigns.map((design, index) => (
+              {pagedDesigns.map((design, index) => (
                 <article className={`graphics-gallery-card graphics-gallery-card-${(index % 6) + 1}`} key={`${design.title}-${design.imagePath}`}>
                   <button type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
-                    <div className="graphics-image-wrap"><img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" /><span>{String(index + 1).padStart(2, "0")}</span><i className="graphics-card-open"><ArrowUpRight size={17} /></i></div>
+                    <div className="graphics-image-wrap"><img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" /><span>{String((currentPage - 1) * pageSize + index + 1).padStart(2, "0")}</span><i className="graphics-card-open"><ArrowUpRight size={17} /></i></div>
                     <div className="graphics-card-copy"><small>{design.type}</small><h3>{design.title}</h3><span>View project <ArrowUpRight size={14} /></span></div>
                   </button>
                 </article>
               ))}
             </div>
           ) : <p className="graphics-empty">New pieces are being prepared for the archive. Please check back soon.</p>}
+          {pageCount > 1 && <nav className="graphics-pagination" aria-label="Design gallery pages">
+            <button type="button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous</button>
+            <span aria-live="polite">Page {currentPage} of {pageCount}</span>
+            <button type="button" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Next <ArrowRight size={15} /></button>
+          </nav>}
         </section>
 
         <section className="graphics-cta"><div><small>HAVE A GOOD IDEA?</small><h2>Let&apos;s give it<br /><em>a visual voice.</em></h2></div><a href="/contact.html">Start a conversation <ArrowUpRight size={15} /></a><span className="graphics-cta-note">AVAILABLE FOR SELECT PROJECTS<br />BRANDING · CAMPAIGNS · EVENT ARTWORK</span></section>
       </main>
-      {selected && <div className="graphics-modal" role="dialog" aria-modal="true" aria-label={selected.title} onClick={() => setSelected(null)}><div onClick={(event) => event.stopPropagation()}><button className="graphics-close" type="button" onClick={() => setSelected(null)} aria-label="Close design"><X /></button><small>{selected.type}</small><h2>{selected.title}</h2><img src={publicAsset(selected.imagePath)} alt={selected.title} /><p>{selected.description}</p><a href="/contact.html">Work on a visual direction <ArrowUpRight size={14} /></a></div></div>}
+      <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+        <DialogContent className="graphics-viewer">
+          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription>{selected.description}</DialogDescription><a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
+        </DialogContent>
+      </Dialog>
       <SheunFooter />
     </SheunShell>
   );
