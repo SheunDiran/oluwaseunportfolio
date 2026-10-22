@@ -1,15 +1,47 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Quote } from "lucide-react";
 import "./Graphics.css";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import SheunShell, { SheunFooter } from "@/components/SheunShell";
+import SheunShell from "@/components/SheunShell";
 
-type Design = { title: string; imagePath: string; type: string; description: string };
+type Design = { title: string; imagePath: string; type: string; description: string; tags?: string[] };
+type Testimonial = { quote: string; name: string; organisation: string };
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+const categories = ["Flyers & Posters", "Social Media", "Branding"];
+
+function categoryFor(design: Design) {
+  const text = [design.type, ...(design.tags || [])].join(" ").toLowerCase();
+  if (/social|communication|announcement|content/.test(text)) return "Social Media";
+  if (/brand|community|identity|logo/.test(text)) return "Branding";
+  if (/flyer|poster|event|campaign/.test(text)) return "Flyers & Posters";
+  return "Other";
+}
+
+function GraphicFooter() {
+  return (
+    <footer className="graphics-footer">
+      <div className="graphics-footer-inner">
+        <div className="graphics-footer-main">
+          <small>HAVE A GOOD IDEA?</small>
+          <h2>Let&apos;s create something<br />worth seeing.</h2>
+          <a className="graphics-footer-cta" href="/contact.html">Let&apos;s work together <ArrowUpRight size={16} /></a>
+        </div>
+        <div className="graphics-footer-contact">
+          <span>FOLLOW / SAY HELLO</span>
+          <a href="mailto:oluwaseunoyediran641@gmail.com"><Mail size={15} /> Email Sheun <ArrowUpRight size={13} /></a>
+          <a href="https://wa.me/2347073754496?text=Hi%20Sheun%2C%20I%20found%20your%20graphic%20design%20portfolio." target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp <ArrowUpRight size={13} /></a>
+          <small>LAGOS, NIGERIA · AVAILABLE FOR SELECT PROJECTS</small>
+        </div>
+        <div className="graphics-footer-bottom"><strong>SHEUN</strong><span>© {new Date().getFullYear()} Sheun. All rights reserved.</span><small>INDEPENDENT GRAPHIC DESIGNER</small></div>
+      </div>
+    </footer>
+  );
+}
 
 export default function Graphics() {
   const [designs, setDesigns] = useState<Design[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [selected, setSelected] = useState<Design | null>(null);
   const [ownerSession, setOwnerSession] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All work");
@@ -18,19 +50,35 @@ export default function Graphics() {
 
   useEffect(() => {
     const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
-    setOwnerSession(unlockedUntil > Date.now());
+    let hasPortfolioWriteAccess = false;
+    try {
+      const savedConfig = JSON.parse(localStorage.getItem("dhub-github-config") || "{}");
+      hasPortfolioWriteAccess = savedConfig.repo === "SheunDiran/oluwaseunportfolio" && typeof savedConfig.token === "string" && savedConfig.token.length > 0;
+    } catch { hasPortfolioWriteAccess = false; }
+    setOwnerSession(unlockedUntil > Date.now() && hasPortfolioWriteAccess);
     fetch(publicAsset("/designs.json"))
       .then((response) => (response.ok ? response.json() : []))
       .then((data: unknown) => setDesigns(Array.isArray(data) ? data : []))
       .catch(() => setDesigns([]));
+    fetch(publicAsset("/testimonials.json"))
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data: unknown) => setTestimonials(Array.isArray(data) ? data : []))
+      .catch(() => setTestimonials([]));
   }, []);
 
-  const filters = useMemo(() => ["All work", ...Array.from(new Set(designs.map((design) => design.type)))], [designs]);
-  const visibleDesigns = activeFilter === "All work" ? designs : designs.filter((design) => design.type === activeFilter);
-
+  const filters = useMemo(() => ["All work", ...categories, ...(designs.some((design) => categoryFor(design) === "Other") ? ["Other"] : [])], [designs]);
+  const countFor = (filter: string) => filter === "All work" ? designs.length : designs.filter((design) => categoryFor(design) === filter).length;
+  const visibleDesigns = activeFilter === "All work" ? designs : designs.filter((design) => categoryFor(design) === activeFilter);
   const pageCount = Math.max(1, Math.ceil(visibleDesigns.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const pagedDesigns = visibleDesigns.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const firstVisible = visibleDesigns.length ? (currentPage - 1) * pageSize + 1 : 0;
+  const lastVisible = Math.min(currentPage * pageSize, visibleDesigns.length);
+
+  function goToPage(nextPage: number) {
+    setPage(Math.max(1, Math.min(pageCount, nextPage)));
+    document.getElementById("selected-work")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <SheunShell active="designs">
@@ -68,51 +116,58 @@ export default function Graphics() {
           <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
         </section>
 
-
-
-        <section className="graphics-gallery" id="selected-work">
+        <section className="graphics-gallery graphics-selected-work" id="selected-work">
           <div className="graphics-gallery-head">
             <div><small>WORK</small><h2>Selected work</h2><p>Flyers, social content and visual identities.</p></div>
-
+            {ownerSession && <a className="graphics-owner-preview" href="/admin" aria-label="Open owner preview and add a design"><span><Plus size={22} /></span><small>Owner preview</small></a>}
           </div>
-          <div className="graphics-filter-row">
-
+          {designs.length > 0 && <div className="graphics-filter-row">
             <div className="graphics-filters" role="group" aria-label="Filter designs by category">
               {filters.map((filter) => (
                 <button key={filter} className={activeFilter === filter ? "is-active" : ""} type="button" aria-pressed={activeFilter === filter} onClick={() => { setActiveFilter(filter); setPage(1); }}>
-                  {filter === "All work" ? "All work" : filter}<span>{filter === "All work" ? designs.length : designs.filter((design) => design.type === filter).length}</span>
+                  {filter}<span aria-label={`${countFor(filter)} designs`}>{countFor(filter)}</span>
                 </button>
               ))}
             </div>
-          </div>
-          {ownerSession && <a className="graphics-owner-add" href="/admin"><Plus size={15} /> Add a design <span>OWNER SESSION</span></a>}
+          </div>}
           {visibleDesigns.length ? (
             <div className="graphics-gallery-grid">
               {pagedDesigns.map((design, index) => (
                 <article className={`graphics-gallery-card graphics-gallery-card-${(index % 6) + 1}`} key={`${design.title}-${design.imagePath}`}>
                   <button type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
                     <div className="graphics-image-wrap"><img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" /><span>{String((currentPage - 1) * pageSize + index + 1).padStart(2, "0")}</span><i className="graphics-card-open"><ArrowUpRight size={17} /></i></div>
-                    <div className="graphics-card-copy"><h3>{design.title}</h3></div>
+                    <div className="graphics-card-copy"><small>{design.type}</small><h3>{design.title}</h3></div>
                   </button>
                 </article>
               ))}
             </div>
-          ) : <p className="graphics-empty">New pieces are being prepared for the archive. Please check back soon.</p>}
-          {pageCount > 1 && <nav className="graphics-pagination" aria-label="Design gallery pages">
-            <button type="button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous</button>
-            <span aria-live="polite">Page {currentPage} of {pageCount}</span>
-            <button type="button" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Next <ArrowRight size={15} /></button>
+          ) : <p className="graphics-empty">{designs.length ? "There are no pieces in this category yet. Choose another filter to keep exploring." : "I’m preparing the first pieces for this archive. Please check back soon."}</p>}
+          {visibleDesigns.length > 0 && <nav className="graphics-pagination graphics-pagination-numbered" aria-label="Design gallery pages">
+            <button className="graphics-page-arrow" type="button" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)} aria-label="Previous page"><ArrowLeft size={16} /></button>
+            <div className="graphics-page-numbers">{Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => <button type="button" key={pageNumber} className={currentPage === pageNumber ? "is-current" : ""} aria-current={currentPage === pageNumber ? "page" : undefined} onClick={() => goToPage(pageNumber)}>{pageNumber}</button>)}</div>
+            <button className="graphics-page-arrow" type="button" disabled={currentPage === pageCount} onClick={() => goToPage(currentPage + 1)} aria-label="Next page"><ArrowRight size={16} /></button>
+            <span className="graphics-page-summary">Showing {firstVisible}–{lastVisible} of {visibleDesigns.length}</span>
           </nav>}
         </section>
 
-        <section className="graphics-cta"><div><small>HAVE A GOOD IDEA?</small><h2>Let&apos;s give it<br /><em>a visual voice.</em></h2></div><a href="/contact.html">Start a conversation <ArrowUpRight size={15} /></a><span className="graphics-cta-note">AVAILABLE FOR SELECT PROJECTS<br />BRANDING · CAMPAIGNS · EVENT ARTWORK</span></section>
+        <section className="graphics-testimonials" aria-labelledby="graphics-testimonials-title">
+          <div className="graphics-testimonials-heading"><small>TESTIMONIALS</small><h2 id="graphics-testimonials-title">Words from people I&apos;ve worked with</h2></div>
+          {testimonials.length ? (
+            <div className="graphics-testimonial-grid">{testimonials.map((item, index) => <article className="graphics-testimonial-card" key={`${item.name}-${index}`}><Quote size={25} aria-hidden="true" /><blockquote>{item.quote}</blockquote><span className="graphics-testimonial-rule" /><p>{item.name}<small>{item.organisation}</small></p></article>)}</div>
+          ) : (
+            <div className="graphics-testimonial-grid graphics-testimonial-empty">
+              <article className="graphics-testimonial-card"><Quote size={25} aria-hidden="true" /><p className="graphics-testimonial-note">Client notes will appear here once I have permission to share them.</p><span className="graphics-testimonial-rule" /><small>CLIENT STORIES / COMING SOON</small></article>
+              <article className="graphics-testimonial-card graphics-testimonial-invite"><Quote size={25} aria-hidden="true" /><p className="graphics-testimonial-note">Have we worked together? I&apos;d love to hear about your experience.</p><span className="graphics-testimonial-rule" /><a href="mailto:oluwaseunoyediran641@gmail.com?subject=Portfolio%20testimonial">Share a note <ArrowUpRight size={13} /></a></article>
+            </div>
+          )}
+        </section>
       </main>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="graphics-viewer">
-          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription>{selected.description}</DialogDescription><a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
+          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription>{selected.description}</DialogDescription>{selected.tags?.length ? <div className="graphics-viewer-tags" aria-label="Project tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}<a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
         </DialogContent>
       </Dialog>
-      <SheunFooter />
+      <GraphicFooter />
     </SheunShell>
   );
 }
