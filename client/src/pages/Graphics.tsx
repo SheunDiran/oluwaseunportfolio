@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
+import "./Graphics.css";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import SheunShell, { SheunFooter } from "@/components/SheunShell";
 
@@ -33,17 +34,20 @@ export default function Graphics() {
 
   return (
     <SheunShell active="designs">
-      <main className="graphics-page">
-        <section className="graphics-cover" aria-labelledby="graphics-cover-title">
-          <div className="graphics-cover-top"><span>OLUWASEUN OYEDIRAN / D-HUB</span><span>INDEPENDENT DESIGNER · LAGOS</span></div>
-          <p className="graphics-cover-hello">Ideas deserve to be seen.</p>
-          <h1 id="graphics-cover-title">GRAPHIC<br /><em>DESIGNER.</em></h1>
-          <div className="graphics-cover-bottom">
-            <p>I’m Sheun. I turn ideas into bold visuals for brands, events and communities.</p>
-            <a href="#selected-work">Explore my work <ArrowUpRight size={22} /></a>
-            <span className="graphics-cover-star" aria-hidden="true">✳</span>
+      <main className="graphics-page graphics-editorial">
+        <section className="editorial-hero" aria-labelledby="editorial-title">
+          <div className="editorial-composition">
+            <h1 id="editorial-title"><span className="editorial-graphic">GRAPHIC</span><span className="editorial-script">Designer</span></h1>
+            <img className="editorial-cutout" src={publicAsset("/images/sheun-designer-cutout.webp")} alt="Oluwaseun Oyediran with her arms crossed, wearing a pink shirt and dark waistcoat" fetchPriority="high" />
+            <span className="editorial-flourish" aria-hidden="true" />
+            <span className="editorial-coral-marks" aria-hidden="true"><i /><i /></span>
           </div>
-          <div className="graphics-cover-strip" aria-hidden="true">BRAND IDENTITY <span>✳</span> EVENT ARTWORK <span>✳</span> CAMPAIGN DESIGN <span>✳</span> VISUAL STORYTELLING</div>
+          <div className="editorial-identity">
+            <h2>Oluwaseun Oyediran</h2>
+            <p className="editorial-role">GRAPHIC DESIGNER</p>
+            <p>Thoughtful visuals for brands, events and communities.</p>
+            <div className="editorial-actions"><a href="#selected-work">View my work <ArrowUpRight size={15} /></a><a href="/contact.html">Let’s work together</a></div>
+          </div>
         </section>
         <section className="graphics-hero graphics-hero-intro">
           <div className="graphics-hero-copy">
@@ -68,11 +72,11 @@ export default function Graphics() {
 
         <section className="graphics-gallery" id="selected-work">
           <div className="graphics-gallery-head">
-            <div><small>SELECTED WORK / 02</small><h2>A visual<br /><em>working archive.</em></h2></div>
-            <span>{String(visibleDesigns.length).padStart(2, "0")} PIECES <i /> MADE WITH INTENTION</span>
+            <div><small>WORK</small><h2>Selected work</h2><p>Flyers, social content and visual identities.</p></div>
+
           </div>
           <div className="graphics-filter-row">
-            <span className="graphics-filter-label">BROWSE BY DISCIPLINE</span>
+
             <div className="graphics-filters" role="group" aria-label="Filter designs by category">
               {filters.map((filter) => (
                 <button key={filter} className={activeFilter === filter ? "is-active" : ""} type="button" aria-pressed={activeFilter === filter} onClick={() => { setActiveFilter(filter); setPage(1); }}>
@@ -88,7 +92,7 @@ export default function Graphics() {
                 <article className={`graphics-gallery-card graphics-gallery-card-${(index % 6) + 1}`} key={`${design.title}-${design.imagePath}`}>
                   <button type="button" onClick={() => setSelected(design)} aria-label={`View ${design.title}`}>
                     <div className="graphics-image-wrap"><img src={publicAsset(design.imagePath)} alt={design.title} loading="lazy" /><span>{String((currentPage - 1) * pageSize + index + 1).padStart(2, "0")}</span><i className="graphics-card-open"><ArrowUpRight size={17} /></i></div>
-                    <div className="graphics-card-copy"><small>{design.type}</small><h3>{design.title}</h3><span>View project <ArrowUpRight size={14} /></span></div>
+                    <div className="graphics-card-copy"><h3>{design.title}</h3></div>
                   </button>
                 </article>
               ))}
