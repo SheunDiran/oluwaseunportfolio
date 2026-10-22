@@ -50,20 +50,11 @@ export default function Graphics() {
   const pageSize = 6;
 
   useEffect(() => {
-    const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
     const controller = new AbortController();
-    let expiryTimer: ReturnType<typeof setTimeout> | undefined;
-    setOwnerSession(false);
-    try {
-      const savedConfig = JSON.parse(localStorage.getItem("dhub-github-config") || "{}");
-      if (unlockedUntil > Date.now() && savedConfig.repo === "SheunDiran/oluwaseunportfolio" && typeof savedConfig.token === "string" && savedConfig.token) {
-        fetch("https://api.github.com/repos/SheunDiran/oluwaseunportfolio", { headers: { Authorization: `Bearer ${savedConfig.token}`, Accept: "application/vnd.github+json" }, signal: controller.signal })
-          .then(response => response.ok ? response.json() : null)
-          .then(repo => { if (!controller.signal.aborted && Date.now() < unlockedUntil && repo?.permissions?.push === true) setOwnerSession(true); })
-          .catch(() => undefined);
-        expiryTimer = setTimeout(() => setOwnerSession(false), unlockedUntil - Date.now());
-      }
-    } catch { setOwnerSession(false); }
+    fetch("/api/studio", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!controller.signal.aborted) setOwnerSession(data?.authenticated === true); })
+      .catch(() => setOwnerSession(false));
     fetch(publicAsset("/designs.json"))
       .then((response) => (response.ok ? response.json() : []))
       .then((data: unknown) => setDesigns(Array.isArray(data) ? data : []))
@@ -72,7 +63,7 @@ export default function Graphics() {
       .then((response) => (response.ok ? response.json() : []))
       .then((data: unknown) => setTestimonials(Array.isArray(data) ? data : []))
       .catch(() => setTestimonials([]));
-    return () => { controller.abort(); if (expiryTimer) clearTimeout(expiryTimer); };
+    return () => controller.abort();
   }, []);
 
   const filters = useMemo(() => ["All work", ...categories, ...(designs.some((design) => categoryFor(design) === "Other") ? ["Other"] : [])], [designs]);

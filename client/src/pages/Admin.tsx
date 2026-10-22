@@ -1,207 +1,85 @@
-import { FormEvent, DragEvent, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, Github, ImagePlus, LockKeyhole, Plus, Save, Upload, X } from "lucide-react";
-import { Link } from "wouter";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { ArrowLeft, ImagePlus, LogOut, Plus, Trash2, Upload } from "lucide-react";
+import { studioRequest, imageForUpload, type DesignDraft } from "@/lib/studio";
 import "./AdminUpload.css";
-import { publishDesigns, type QueuedDesign } from "@/lib/publishDesigns";
 
-const DEFAULT_CONFIG = { repo: "SheunDiran/oluwaseunportfolio", branch: "main", dataPath: "client/public/designs.json", testimonialsPath: "client/public/testimonials.json", token: "" };
-type Config = typeof DEFAULT_CONFIG;
-type DesignRecord = { title: string; description?: string; type: string; imagePath: string; tags?: string[] };
+type Design = { title: string; imagePath: string; type: string };
 type Testimonial = { quote: string; name: string; organisation: string };
-type Status = { kind: "idle" | "success" | "error"; text: string };
-const IMAGE_LIMIT = 12 * 1024 * 1024;
-
-function encodeText(value: string) { return btoa(unescape(encodeURIComponent(value))); }
-async function getFileSha(repo: string, path: string, branch: string, token: string) {
-  const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" } });
-  if (response.status === 404) return undefined;
-  if (!response.ok) throw new Error("Could not read the existing GitHub file. Check the repository, branch and token permissions.");
-  const data = await response.json();
-  return data.sha as string | undefined;
-}
-async function commitFile(config: Config, path: string, content: string, message: string, isBase64 = false) {
-  const sha = await getFileSha(config.repo, path, config.branch, config.token);
-  const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${config.token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
-    body: JSON.stringify({ message, content: isBase64 ? content : encodeText(content), branch: config.branch, ...(sha ? { sha } : {}) }),
-  });
-  if (!response.ok) {
-    const result = await response.json().catch(() => ({}));
-    throw new Error(result.message || "GitHub did not accept the commit.");
-  }
-}
-function readJson<T>(path: string, fallback: T): Promise<T> {
-  return fetch(path).then((response) => response.ok ? response.json() as Promise<T> : fallback).catch(() => fallback);
-}
-
+const blank = (): DesignDraft => ({ id: crypto.randomUUID(), file: null, title: "", description: "", type: "Flyers & Posters", tags: "" });
 export default function Admin() {
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [hasPassword, setHasPassword] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [setupNeeded, setSetupNeeded] = useState(false);
   const [password, setPassword] = useState("");
-  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const [designs, setDesigns] = useState<DesignRecord[]>([]);
+  const [drafts, setDrafts] = useState<DesignDraft[]>([blank()]);
+  const [designs, setDesigns] = useState<Design[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [queue, setQueue] = useState<QueuedDesign[]>([]);
-  const [quoteForm, setQuoteForm] = useState<Testimonial>({ quote: "", name: "", organisation: "" });
-  const [status, setStatus] = useState<Status>({ kind: "idle", text: "" });
+  const [quote, setQuote] = useState<Testimonial>({ quote: "", name: "", organisation: "" });
   const [busy, setBusy] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
+  const [message, setMessage] = useState("");
+  const [failed, setFailed] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const tickets = useRef(new Map<string, { file: File; ticket: string }>());
   useEffect(() => {
-    setHasPassword(Boolean(localStorage.getItem("dhub-admin-password")));
-    try {
-      const savedConfig = localStorage.getItem("dhub-github-config");
-      if (savedConfig) setConfig({ ...DEFAULT_CONFIG, ...JSON.parse(savedConfig) });
-    } catch { localStorage.removeItem("dhub-github-config"); }
-    const unlockedUntil = Number(sessionStorage.getItem("dhub-admin-unlocked-until") || 0);
-    setIsUnlocked(unlockedUntil > Date.now());
-    void readJson<DesignRecord[]>("/designs.json", []).then((data) => setDesigns(Array.isArray(data) ? data : []));
-    void readJson<Testimonial[]>("/testimonials.json", []).then((data) => setTestimonials(Array.isArray(data) ? data : []));
+    // Retire the old browser-only credentials; server cookies now control access.
+    localStorage.removeItem("dhub-admin-password"); localStorage.removeItem("dhub-github-config"); sessionStorage.removeItem("dhub-admin-unlocked-until");
+    studioRequest().then(async data => { setSignedIn(data.authenticated); if (data.authenticated) await loadArchive(); }).catch(error => { setFailed(true); setMessage(error.message); setSetupNeeded(true); }).finally(() => setLoading(false));
   }, []);
-
-  function unlock(event: FormEvent) {
+  async function loadArchive() { const data = await studioRequest(undefined, "data"); setDesigns(data.designs || []); setTestimonials(data.testimonials || []); }
+  function status(text: string, error = false) { setMessage(text); setFailed(error); }
+  async function login(event: FormEvent) {
+    event.preventDefault(); setBusy(true); status("");
+    try { await studioRequest({ action: "login", password }); setPassword(""); setSignedIn(true); await loadArchive(); }
+    catch (error) { status((error as Error).message, true); } finally { setBusy(false); }
+  }
+  async function logout() { setBusy(true); try { await studioRequest({ action: "logout" }); setSignedIn(false); setDrafts([blank()]); tickets.current.clear(); status(""); } catch (error) { status((error as Error).message, true); } finally { setBusy(false); } }
+  function update(id: string, changes: Partial<DesignDraft>) { setDrafts(current => current.map(item => item.id === id ? { ...item, ...changes } : item)); }
+  function addFiles(files: File[]) {
+    const valid = files.filter(file => /^(image\/(png|jpeg|webp))$/.test(file.type) && file.size <= 12 * 1024 * 1024);
+    if (valid.length !== files.length) status("Some files were skipped. Choose PNG, JPG or WebP pictures under 12 MB.", true);
+    setDrafts(current => {
+      const filled = valid.map(file => ({ ...blank(), file, title: file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ") }));
+      return [...current.filter(item => item.file || item.title.trim() || item.description.trim()), ...filled].slice(0, 50);
+    });
+  }
+  async function publish(event: FormEvent) {
     event.preventDefault();
-    const saved = localStorage.getItem("dhub-admin-password");
-    if (!saved) {
-      if (password.length < 8) { setStatus({ kind: "error", text: "Choose at least 8 characters for your browser-only owner key." }); return; }
-      localStorage.setItem("dhub-admin-password", password);
-      setHasPassword(true);
-      setIsUnlocked(true);
-      sessionStorage.setItem("dhub-admin-unlocked-until", String(Date.now() + 1000 * 60 * 60 * 8));
-      setPassword("");
-      return;
-    }
-    if (password !== saved) { setStatus({ kind: "error", text: "That password does not match this browser's local owner key." }); return; }
-    setIsUnlocked(true);
-    sessionStorage.setItem("dhub-admin-unlocked-until", String(Date.now() + 1000 * 60 * 60 * 8));
-    setPassword("");
-  }
-
-  function chooseFiles(files: File[]) {
-    if (busy) return;
-    const valid = files.filter(file => /^(image\/(png|jpeg|webp))$/.test(file.type) && file.size <= IMAGE_LIMIT);
-    setQueue(current => [...current, ...valid.map(file => ({ id: crypto.randomUUID(), file, title: file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "), description: "", type: "Flyers & Posters", tags: "" }))]);
-    setStatus(valid.length === files.length ? { kind: "idle", text: "" } : { kind: "error", text: "Some files were skipped. Use PNG, JPG or WebP pictures up to 12 MB each." });
-  }
-  function updateQueued(id: string, patch: Partial<QueuedDesign>) {
-    setQueue(current => current.map(item => item.id === id ? { ...item, ...patch } : item));
-  }
-  function onDrop(event: DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    setDragging(false);
-    chooseFiles(Array.from(event.dataTransfer.files));
-  }
-  function saveConfig() {
-    if (!config.repo.trim() || !config.branch.trim() || !config.token.trim()) { setStatus({ kind: "error", text: "Add your repository, branch and GitHub token before saving." }); return; }
-    localStorage.setItem("dhub-github-config", JSON.stringify(config));
-    setStatus({ kind: "success", text: "GitHub connection saved on this browser only." });
-  }
-
-  async function addDesign(event: FormEvent) {
-    event.preventDefault();
-    if (busy) return;
-    if (!config.token || !queue.length || queue.some(item => !item.title.trim())) { setStatus({ kind: "error", text: "Connect GitHub, select pictures and give each one a title. Descriptions are optional." }); return; }
+    if (drafts.some(item => !item.file || !item.title.trim())) { status("Give each design a picture and title, or remove its empty form.", true); return; }
     setBusy(true);
     try {
-      const next = await publishDesigns(config, queue, text => setStatus({ kind: "idle", text }));
-      localStorage.setItem("dhub-github-config", JSON.stringify(config));
-      setDesigns(next);
-      const count = queue.length;
-      setQueue([]);
-      if (inputRef.current) inputRef.current.value = "";
-      setStatus({ kind: "success", text: `${count} picture${count === 1 ? "" : "s"} saved to your portfolio. The gallery will update after Vercel finishes deploying.` });
-    } catch (error) {
-      setStatus({ kind: "error", text: error instanceof Error ? error.message : "Publishing failed. Your pictures are still selected; please retry." });
-    } finally { setBusy(false); }
+      const items = [];
+      for (let index = 0; index < drafts.length; index++) {
+        const item = drafts[index]; const file = item.file!;
+        status(`Uploading design ${index + 1} of ${drafts.length}…`);
+        let cached = tickets.current.get(item.id);
+        if (!cached || cached.file !== file) { const result = await studioRequest({ action: "image", image: await imageForUpload(file) }); cached = { file, ticket: result.ticket }; tickets.current.set(item.id, cached); }
+        items.push({ title: item.title, description: item.description, type: item.type, tags: item.tags, ticket: cached.ticket });
+      }
+      status("Publishing your designs…");
+      const result = await studioRequest({ action: "designs", items });
+      setDesigns(result.items); tickets.current.clear(); setDrafts([blank()]);
+      status(`${items.length} design${items.length === 1 ? "" : "s"} saved. They’ll appear in the gallery when the site finishes updating.`);
+    } catch (error) { status((error as Error).message, true); } finally { setBusy(false); }
   }
-
-  async function addTestimonial(event: FormEvent) {
-    event.preventDefault();
-    if (!config.repo || !config.token || !quoteForm.quote.trim() || !quoteForm.name.trim()) { setStatus({ kind: "error", text: "Add your GitHub connection, approved quote and client name first." }); return; }
-    setBusy(true);
-    setStatus({ kind: "idle", text: "Adding the approved client feedback…" });
-    try {
-      const next = [{ quote: quoteForm.quote.trim(), name: quoteForm.name.trim(), organisation: quoteForm.organisation.trim() }, ...testimonials];
-      await commitFile(config, config.testimonialsPath, JSON.stringify(next, null, 2), `Add testimonial from ${quoteForm.name.trim()}`);
-      localStorage.setItem("dhub-github-config", JSON.stringify(config));
-      setTestimonials(next);
-      setQuoteForm({ quote: "", name: "", organisation: "" });
-      setStatus({ kind: "success", text: "Testimonial added. Only publish feedback you have permission to share." });
-    } catch (error) { setStatus({ kind: "error", text: error instanceof Error ? error.message : "Could not save the testimonial." }); }
-    finally { setBusy(false); }
-  }
-
-  const statusIcon = useMemo(() => status.kind === "success" ? <Check size={16} /> : status.kind === "error" ? <X size={16} /> : null, [status.kind]);
-  if (!isUnlocked) return <div className="admin-shell"><div className="admin-card admin-login"><Link href="/designs" className="admin-back"><ArrowLeft size={15} /> Back to designs</Link><div className="admin-icon"><LockKeyhole size={23} /></div><span className="eyebrow">Private route / owner access</span><h1>{hasPassword ? "Welcome back." : "Set your owner key."}</h1><p>{hasPassword ? "Unlock this browser's private design workspace." : "Choose an owner key for this browser. This is a convenience gate; GitHub permissions control who can publish changes."}</p><form onSubmit={unlock}><label>{hasPassword ? "Browser-only owner key" : "Create browser-only owner key"}<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} autoFocus /></label><button className="admin-submit" type="submit">{hasPassword ? "Unlock workspace" : "Create owner key"} <LockKeyhole size={15} /></button></form>{status.kind === "error" && <p className="admin-status error">{status.text}</p>}</div></div>;
-
-  return (
-    <div className="admin-shell admin-design-studio">
-      <div className="admin-topbar"><Link href="/designs" className="admin-back"><ArrowLeft size={15} /> Back to design portfolio</Link><button type="button" className="admin-secondary" disabled={busy} onClick={() => { sessionStorage.removeItem("dhub-admin-unlocked-until"); setIsUnlocked(false); }}>Lock workspace <LockKeyhole size={14} /></button></div>
-      <main className="admin-main">
-        <div className="admin-heading"><div><span className="eyebrow">SHEUN / DESIGN STUDIO</span><h1>Add to the archive.</h1><p>Upload a flyer, add its title and tags, then let Vercel publish your update.</p></div><Github size={40} strokeWidth={1.2} /></div>
-        <div className="admin-grid">
-          <section className="admin-card">
-            <div className="admin-card-title"><span>01</span><h2>Connect GitHub once</h2></div>
-            <p className="admin-help">A fine-grained token needs <strong>Contents: Read and write</strong> access to <code>SheunDiran/oluwaseunportfolio</code>. It is stored only in this browser and is never included in the public page. Never paste it into chat or commit it.</p>
-            <label>Repository <input placeholder="owner/repository" value={config.repo} onChange={(event) => setConfig({ ...config, repo: event.target.value })} /></label>
-            <div className="admin-fields"><label>Branch <input value={config.branch} onChange={(event) => setConfig({ ...config, branch: event.target.value })} /></label><label>Design archive path <input value={config.dataPath} onChange={(event) => setConfig({ ...config, dataPath: event.target.value })} /></label></div>
-            <label>Testimonials file <input value={config.testimonialsPath} onChange={(event) => setConfig({ ...config, testimonialsPath: event.target.value })} /></label>
-            <label>Fine-grained GitHub token <input type="password" autoComplete="off" placeholder="github_pat_…" value={config.token} onChange={(event) => setConfig({ ...config, token: event.target.value })} /></label>
-            <button className="admin-secondary admin-save-connection" type="button" onClick={saveConfig}><Save size={15} /> Save connection on this browser</button>
-            <a className="admin-token-help" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Create a fine-grained token <ArrowLeft size={13} /></a>
-          </section>
-
-          <section className="admin-card">
-            <div className="admin-card-title"><span>02</span><h2>Upload a new design</h2></div>
-            <p className="admin-help">Choose a strong image, add its display details and category. New work appears first in the gallery.</p>
-            <form onSubmit={addDesign}>
-              <fieldset disabled={busy} className="admin-upload-fields">
-                <div className={`upload-box admin-dropzone ${dragging ? "is-dragging" : ""}`} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop} onClick={() => { if (!busy) inputRef.current?.click(); }} role="button" tabIndex={busy ? -1 : 0} aria-label="Choose pictures to upload" onKeyDown={(event) => { if (!busy && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); inputRef.current?.click(); } }}>
-                  <ImagePlus size={28} /><strong>Drop pictures here or browse</strong><span>Select several at once · PNG, JPG or WebP · up to 12 MB each</span>
-                  <input ref={inputRef} type="file" multiple accept="image/png,image/jpeg,image/webp" aria-label="Select portfolio pictures" onClick={(event) => event.stopPropagation()} onChange={(event) => { chooseFiles(Array.from(event.target.files || [])); event.target.value = ""; }} />
-                </div>
-                {queue.length > 0 && <p className="admin-help">{queue.length} picture{queue.length === 1 ? "" : "s"} selected. Check each title below. Descriptions and tags are optional.</p>}
-                <div className="admin-upload-queue">{queue.map(item => <UploadItem key={item.id} item={item} onChange={patch => updateQueued(item.id, patch)} onRemove={() => setQueue(current => current.filter(entry => entry.id !== item.id))} />)}</div>
-                <button className="admin-submit" type="submit" disabled={busy || !queue.length}>{busy ? "Publishing pictures…" : <><Upload size={16} /> Publish {queue.length || ""} picture{queue.length === 1 ? "" : "s"}</>}</button>
-              </fieldset>
-            </form>
-          </section>
-        </div>
-
-        <div className="admin-grid admin-secondary-grid">
-          <section className="admin-card">
-            <div className="admin-card-title"><span>03</span><h2>Add a client testimonial</h2></div>
-            <p className="admin-help">Use the client&apos;s approved words and confirm they have permission to be featured publicly.</p>
-            <form onSubmit={addTestimonial}>
-              <label>Client&apos;s words <textarea value={quoteForm.quote} onChange={(event) => setQuoteForm({ ...quoteForm, quote: event.target.value })} placeholder="Paste an approved quote…" rows={4} maxLength={700} /></label>
-              <div className="admin-fields"><label>Name <input value={quoteForm.name} onChange={(event) => setQuoteForm({ ...quoteForm, name: event.target.value })} placeholder="Client name" maxLength={80} /></label><label>Organisation <input value={quoteForm.organisation} onChange={(event) => setQuoteForm({ ...quoteForm, organisation: event.target.value })} placeholder="Optional" maxLength={100} /></label></div>
-              <button className="admin-submit" type="submit" disabled={busy}>{busy ? "Publishing…" : <><Plus size={16} /> Add approved testimonial</>}</button>
-            </form>
-          </section>
-          <section className="admin-card">
-            <div className="admin-card-title"><span>04</span><h2>Published feedback</h2></div>
-            {testimonials.length ? <div className="admin-quote-list">{testimonials.map((item, index) => <article key={`${item.name}-${index}`}><blockquote>“{item.quote}”</blockquote><strong>{item.name}</strong><small>{item.organisation}</small></article>)}</div> : <p className="admin-help">No testimonials published yet. Add real client feedback here when you have approval to share it.</p>}
-          </section>
-        </div>
-
-        <section className="admin-card admin-archive"><div className="admin-card-title"><span>05</span><h2>Current portfolio pieces</h2></div><div className="archive-list">{designs.length === 0 ? <p className="admin-help">No remote entries loaded yet.</p> : designs.map((design, index) => <div className="archive-row" key={`${design.title}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{design.title}</strong><small>{design.type}</small></div>)}</div></section>
-        {status.text && <p role="status" aria-live="polite" className={`admin-status admin-global-status ${status.kind}`}>{statusIcon}{status.text}</p>}
-        <p className="admin-deploy-note">After an upload, GitHub saves the image and archive data on <code>main</code>. Vercel then rebuilds the live website automatically; it can take a short moment to appear.</p>
-      </main>
-    </div>
-  );
+  async function publishQuote(event: FormEvent) { event.preventDefault(); setBusy(true); status("Saving testimonial…"); try { const result = await studioRequest({ action: "testimonial", ...quote }); setTestimonials(result.items); setQuote({ quote: "", name: "", organisation: "" }); status("Testimonial saved. The site is updating."); } catch (error) { status((error as Error).message, true); } finally { setBusy(false); } }
+  const feedback = message && <p className={`studio-status ${failed ? "is-error" : ""}`} role="status" aria-live="polite">{message}</p>;
+  if (loading) return <main className="studio-page"><p>Opening your studio…</p></main>;
+  if (!signedIn) return <main className="studio-page studio-login"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> Back to portfolio</a><section className="studio-panel"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Welcome back.</h1><p>Log in to add designs and testimonials.</p>{feedback}{!setupNeeded && <form onSubmit={login}><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Log in"}</button></form>}</section></main>;
+  return <main className="studio-page">
+    <header className="studio-header"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> View portfolio</a><button className="studio-secondary" onClick={logout} disabled={busy}><LogOut size={16} /> Log out</button></header>
+    <div className="studio-heading"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Your work, ready to share.</h1><p>Add pictures, give them titles, and publish when you’re ready.</p></div>
+    {feedback}
+    <section className="studio-panel"><div className="studio-section-heading"><div><h2>Add designs</h2><p>Descriptions are optional. Publish up to 50 designs together.</p></div><button className="studio-secondary" type="button" onClick={() => input.current?.click()} disabled={busy}>Choose multiple pictures</button><input ref={input} hidden type="file" multiple accept="image/png,image/jpeg,image/webp" onChange={event => { addFiles(Array.from(event.target.files || [])); event.target.value = ""; }} /></div>
+      <form onSubmit={publish}><fieldset disabled={busy}><div className="studio-design-grid">{drafts.map((item, index) => <DesignForm key={item.id} item={item} index={index} update={changes => update(item.id, changes)} remove={() => { tickets.current.delete(item.id); setDrafts(current => current.filter(entry => entry.id !== item.id)); }} />)}</div>
+        <div className="studio-actions"><button type="button" className="studio-secondary studio-add-another" disabled={drafts.length >= 50} onClick={() => setDrafts(current => [...current, blank()])}><Plus size={18} /> Add another design</button><button type="submit" className="studio-primary" disabled={!drafts.length || busy}><Upload size={18} /> {busy ? "Publishing…" : `Publish ${drafts.length} design${drafts.length === 1 ? "" : "s"}`}</button></div>
+      </fieldset></form>
+    </section>
+    <section className="studio-panel"><h2>Add a testimonial</h2><p>Use feedback you have permission to share.</p><form onSubmit={publishQuote}><fieldset disabled={busy}><label>Testimonial<textarea required rows={4} maxLength={700} value={quote.quote} onChange={event => setQuote({ ...quote, quote: event.target.value })} /></label><div className="studio-two-fields"><label>Name<input required maxLength={80} value={quote.name} onChange={event => setQuote({ ...quote, name: event.target.value })} /></label><label>Organisation <span>(optional)</span><input maxLength={100} value={quote.organisation} onChange={event => setQuote({ ...quote, organisation: event.target.value })} /></label></div><button className="studio-primary" disabled={busy}>Publish testimonial</button></fieldset></form></section>
+    <section className="studio-panel"><h2>Saved work · {designs.length}</h2><div className="studio-saved-grid">{designs.map(item => <article key={item.imagePath}><img src={item.imagePath} alt={item.title} loading="lazy" /><h3>{item.title}</h3><p>{item.type}</p></article>)}</div>{!designs.length && <p>Your published designs will appear here.</p>}<h2>Testimonials · {testimonials.length}</h2>{testimonials.map((item, index) => <blockquote key={index}>{item.quote}<cite>{item.name}{item.organisation ? ` · ${item.organisation}` : ""}</cite></blockquote>)}</section>
+  </main>;
 }
-
-function UploadItem({ item, onChange, onRemove }: { item: QueuedDesign; onChange: (patch: Partial<QueuedDesign>) => void; onRemove: () => void }) {
+function DesignForm({ item, index, update, remove }: { item: DesignDraft; index: number; update: (changes: Partial<DesignDraft>) => void; remove: () => void }) {
   const [preview, setPreview] = useState("");
-  useEffect(() => { const url = URL.createObjectURL(item.file); setPreview(url); return () => URL.revokeObjectURL(url); }, [item.file]);
-  return <article className="admin-queued-picture">
-    <div className="admin-queue-heading"><img src={preview} alt={`Preview of ${item.title || item.file.name}`} /><button type="button" onClick={onRemove} aria-label={`Remove ${item.title || item.file.name}`}><X size={18} /></button></div>
-    <label>Title <input required value={item.title} maxLength={90} onChange={event => onChange({ title: event.target.value })} /></label>
-    <label>Description <span className="admin-optional">(optional)</span><textarea value={item.description} maxLength={420} rows={2} onChange={event => onChange({ description: event.target.value })} /></label>
-    <label>Category <select value={item.type} onChange={event => onChange({ type: event.target.value })}><option>Flyers &amp; Posters</option><option>Social Media</option><option>Branding</option><option>Other</option></select></label>
-    <label>Tags <span className="admin-optional">(optional)</span><input value={item.tags} placeholder="event, campaign, community" onChange={event => onChange({ tags: event.target.value })} /></label>
-  </article>;
+  useEffect(() => { if (!item.file) { setPreview(""); return; } const url = URL.createObjectURL(item.file); setPreview(url); return () => URL.revokeObjectURL(url); }, [item.file]);
+  return <article className="studio-design-form"><div className="studio-card-heading"><h3>Design {index + 1}</h3><button type="button" className="studio-remove" onClick={remove} aria-label={`Remove design ${index + 1}`}><Trash2 size={16} /> Remove</button></div><label className="studio-picture-picker">{preview ? <img src={preview} alt={`Preview of ${item.title || `design ${index + 1}`}`} /> : <><ImagePlus size={32} /><strong>Choose picture</strong><span>PNG, JPG or WebP · up to 12 MB</span></>}<input type="file" accept="image/png,image/jpeg,image/webp" aria-label={`Picture for design ${index + 1}`} onChange={event => { const file = event.target.files?.[0]; if (file) update({ file, title: item.title || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ") }); }} /></label><label>Title<input required maxLength={90} placeholder="e.g. NESA event flyer" value={item.title} onChange={event => update({ title: event.target.value })} /></label><label>Description <span>(optional)</span><textarea rows={2} maxLength={420} placeholder="A short note about this design" value={item.description} onChange={event => update({ description: event.target.value })} /></label><label>Category<select value={item.type} onChange={event => update({ type: event.target.value })}><option>Flyers &amp; Posters</option><option>Social Media</option><option>Branding</option><option>Other</option></select></label><label>Tags <span>(optional)</span><input maxLength={300} placeholder="event, social, community" value={item.tags} onChange={event => update({ tags: event.target.value })} /></label></article>;
 }
