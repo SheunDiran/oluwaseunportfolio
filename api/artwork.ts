@@ -1,5 +1,5 @@
 import { get } from "@vercel/blob";
-import { vercelApi } from "../server/vercel-api";
+import { vercelApi } from "../server/vercel-api.js";
 export async function GET(request: Request) {
   const path = new URL(request.url).searchParams.get("path") || "";
   if (!/^artwork\/[a-f0-9-]{36}\.(png|jpg|webp)$/.test(path)) return new Response("Not found", { status: 404 });

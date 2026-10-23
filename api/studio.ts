@@ -1,6 +1,6 @@
-import { readArchive, saveBatch, saveImage } from "../server/studio-storage";
+import { readArchive, saveBatch, saveImage } from "../server/studio-storage.js";
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-import { vercelApi } from "../server/vercel-api";
+import { vercelApi } from "../server/vercel-api.js";
 
 const COOKIE = "__Host-sheun-studio";
 const LIFE = 8 * 60 * 60;
