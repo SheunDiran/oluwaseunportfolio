@@ -1,7 +1,7 @@
 import { get, list, put } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
-import seedDesigns from "../client/public/designs.json";
-import seedTestimonials from "../client/public/testimonials.json";
+import seedDesigns from "../client/public/designs.json" with { type: "json" };
+import seedTestimonials from "../client/public/testimonials.json" with { type: "json" };
 
 type Collection = "designs" | "testimonials";
 function connected() {
