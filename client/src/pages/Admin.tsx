@@ -9,7 +9,6 @@ const blank = (): DesignDraft => ({ id: crypto.randomUUID(), file: null, title: 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [setupNeeded, setSetupNeeded] = useState(false);
   const [password, setPassword] = useState("");
   const [drafts, setDrafts] = useState<DesignDraft[]>([blank()]);
   const [designs, setDesigns] = useState<Design[]>([]);
@@ -23,7 +22,7 @@ export default function Admin() {
   useEffect(() => {
     // Retire the old browser-only credentials; server cookies now control access.
     localStorage.removeItem("dhub-admin-password"); localStorage.removeItem("dhub-github-config"); sessionStorage.removeItem("dhub-admin-unlocked-until");
-    studioRequest().then(async data => { setSignedIn(data.authenticated); if (data.authenticated) await loadArchive(); }).catch(error => { setFailed(true); setMessage(error.message); setSetupNeeded(true); }).finally(() => setLoading(false));
+    studioRequest().then(async data => { setSignedIn(data.authenticated); if (data.authenticated) await loadArchive(); }).catch(error => { setFailed(true); setMessage(error.message); }).finally(() => setLoading(false));
   }, []);
   async function loadArchive() { const data = await studioRequest(undefined, "data"); setDesigns(data.designs || []); setTestimonials(data.testimonials || []); }
   function status(text: string, error = false) { setMessage(text); setFailed(error); }
@@ -64,7 +63,7 @@ export default function Admin() {
   async function publishQuote(event: FormEvent) { event.preventDefault(); setBusy(true); status("Saving testimonial…"); try { const result = await studioRequest({ action: "testimonial", ...quote }); setTestimonials(result.items); setQuote({ quote: "", name: "", organisation: "" }); status("Testimonial saved and published."); } catch (error) { status((error as Error).message, true); } finally { setBusy(false); } }
   const feedback = message && <p className={`studio-status ${failed ? "is-error" : ""}`} role="status" aria-live="polite">{message}</p>;
   if (loading) return <main className="studio-page"><p>Opening your studio…</p></main>;
-  if (!signedIn) return <main className="studio-page studio-login"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> Back to portfolio</a><section className="studio-panel"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Welcome back.</h1><p>Log in to add designs and testimonials.</p>{feedback}{!setupNeeded && <form onSubmit={login}><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Log in"}</button></form>}</section></main>;
+  if (!signedIn) return <main className="studio-page studio-login"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> Back to portfolio</a><section className="studio-panel"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Welcome back.</h1><p>Log in to add designs and testimonials.</p>{feedback}<form onSubmit={login}><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Log in"}</button></form></section></main>;
   return <main className="studio-page">
     <header className="studio-header"><a href="/designs/" className="studio-back"><ArrowLeft size={16} /> View portfolio</a><button className="studio-secondary" onClick={logout} disabled={busy}><LogOut size={16} /> Log out</button></header>
     <div className="studio-heading"><span className="studio-eyebrow">SHEUN / OWNER STUDIO</span><h1>Your work, ready to share.</h1><p>Add pictures, give them titles, and publish when you’re ready.</p></div>
