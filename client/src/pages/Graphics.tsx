@@ -87,6 +87,15 @@ export default function Graphics() {
     return () => { cancelled = true; controller.abort(); window.clearTimeout(timeout); };
   }, [retry]);
 
+  useEffect(() => {
+    // React mounts after the browser's initial anchor lookup on a direct page load.
+    if (window.location.hash !== "#selected-work") return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("selected-work")?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   const filters = useMemo(() => ["All work", ...categories, ...(designs.some((design) => categoryFor(design) === "Other") ? ["Other"] : [])], [designs]);
   const countFor = (filter: string) => filter === "All work" ? designs.length : designs.filter((design) => categoryFor(design) === filter).length;
   const visibleDesigns = activeFilter === "All work" ? designs : designs.filter((design) => categoryFor(design) === activeFilter);
