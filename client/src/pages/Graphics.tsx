@@ -127,6 +127,25 @@ export default function Graphics() {
             <div className="editorial-actions"><a href="#selected-work">View my work <ArrowUpRight size={15} /></a><a href="/contact.html?service=design">Let’s work together</a></div>
           </div>
         </section>
+        <section className="graphics-hero graphics-hero-intro">
+          <div className="graphics-hero-copy">
+            <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
+            <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
+            <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
+            <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
+            <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html?service=design">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
+          </div>
+          <div className="graphics-portrait-stage">
+            <div className="graphics-portrait-orbit graphics-portrait-orbit-one" />
+            <div className="graphics-portrait-orbit graphics-portrait-orbit-two" />
+            <div className="graphics-portrait-circle"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran, graphic designer" /></div>
+            <span className="graphics-portrait-stamp">DESIGN<br />WITH<br />PURPOSE</span>
+            <span className="graphics-portrait-caption">THE DESIGNER BEHIND THE WORK <i>↗</i></span>
+            <span className="graphics-portrait-spark" aria-hidden="true">✳</span>
+          </div>
+          <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
+        </section>
+
         <section className="graphics-gallery graphics-selected-work" id="selected-work" aria-busy={loading}>
           <div className="graphics-gallery-head">
             <div><small>WORK</small><h2>Selected work</h2><p>Flyers, social content and visual identities.</p></div>
@@ -159,25 +178,6 @@ export default function Graphics() {
             <button className="graphics-page-arrow" type="button" disabled={currentPage === pageCount} onClick={() => goToPage(currentPage + 1)} aria-label="Next page"><ArrowRight size={16} /></button>
             <span className="graphics-page-summary">Showing {firstVisible}–{lastVisible} of {visibleDesigns.length}</span>
           </nav>}
-        </section>
-
-        <section className="graphics-hero graphics-hero-intro">
-          <div className="graphics-hero-copy">
-            <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
-            <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
-            <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
-            <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
-            <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html?service=design">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
-          </div>
-          <div className="graphics-portrait-stage">
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-one" />
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-two" />
-            <div className="graphics-portrait-circle"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran, graphic designer" /></div>
-            <span className="graphics-portrait-stamp">DESIGN<br />WITH<br />PURPOSE</span>
-            <span className="graphics-portrait-caption">THE DESIGNER BEHIND THE WORK <i>↗</i></span>
-            <span className="graphics-portrait-spark" aria-hidden="true">✳</span>
-          </div>
-          <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
         </section>
 
         {testimonials.length > 0 && <section className="graphics-testimonials" aria-labelledby="graphics-testimonials-title">
