@@ -44,17 +44,13 @@ export default function Graphics() {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [selected, setSelected] = useState<Design | null>(null);
-  const [ownerSession, setOwnerSession] = useState(false);
+  const ownerSession = false;
   const [activeFilter, setActiveFilter] = useState("All work");
   const [page, setPage] = useState(1);
   const pageSize = 6;
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/studio", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
-      .then(response => response.ok ? response.json() : null)
-      .then(data => { if (!controller.signal.aborted) setOwnerSession(data?.authenticated === true); })
-      .catch(() => setOwnerSession(false));
     fetch("/api/gallery", { cache: "no-store", signal: controller.signal })
       .then(response => { if (!response.ok) throw new Error("Gallery unavailable"); return response.json(); })
       .then(data => { setDesigns(data.designs); setTestimonials(data.testimonials); })

@@ -1,36 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-vi.mock("../../../server/studio-storage", () => ({ readArchive: vi.fn(async () => []), saveImage: vi.fn(async () => "artwork/12345678-1234-1234-1234-123456789012.png"), saveBatch: vi.fn(async () => {}) }));
-import { readArchive, saveBatch } from "../../../server/studio-storage";
+vi.mock("../../../server/studio-storage.js", () => ({ readArchive: vi.fn(async () => []), saveImage: vi.fn(async () => "artwork/12345678-1234-1234-1234-123456789012.png"), saveBatch: vi.fn(async () => {}) }));
+import { readArchive, saveBatch } from "../../../server/studio-storage.js";
 import { GET, POST } from "../../../api/studio";
 const origin = "https://portfolio.example";
-const request = (body: unknown, cookie = "", source = origin) => new Request(`${origin}/api/studio`, { method: "POST", headers: { Origin: source, "Content-Type": "application/json", Cookie: cookie }, body: JSON.stringify(body) });
-beforeEach(() => { vi.stubEnv("STUDIO_PASSWORD", "a-long-test-only-owner-password"); vi.clearAllMocks(); });
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
-async function login() { const response = await POST(request({ action: "login", password: "a-long-test-only-owner-password" })); return response.headers.get("set-cookie")!.split(";")[0]; }
-describe("private owner studio", () => {
-  it("fails closed when private setup is absent", async () => { vi.stubEnv("STUDIO_PASSWORD", ""); expect((await GET(new Request(`${origin}/api/studio`))).status).toBe(503); });
-  it("rejects incorrect passwords and unauthenticated publishing", async () => { expect((await POST(request({ action: "login", password: "wrong" }))).status).toBe(401); expect((await POST(request({ action: "designs", items: [] }))).status).toBe(401); });
-  it("uses an HttpOnly secure cookie and rejects forged sessions", async () => {
-    const response = await POST(request({ action: "login", password: "a-long-test-only-owner-password" }));
-    const cookie = response.headers.get("set-cookie")!;
-    expect(cookie).toContain("HttpOnly; Secure; SameSite=Strict");
-    expect((await (await GET(new Request(`${origin}/api/studio`, { headers: { Cookie: cookie.split(";")[0] } }))).json()).authenticated).toBe(true);
-    expect((await (await GET(new Request(`${origin}/api/studio`, { headers: { Cookie: "__Host-sheun-studio=forged.fake" } }))).json()).authenticated).toBe(false);
+const request = (body: unknown, source = origin) => new Request(`${origin}/api/studio`, { method: "POST", headers: { Origin: source, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+beforeEach(() => { vi.clearAllMocks(); vi.stubEnv("STUDIO_PASSWORD", ""); vi.mocked(readArchive).mockResolvedValue([]); });
+afterEach(() => vi.unstubAllEnvs());
+describe("direct portfolio studio", () => {
+  it("opens without password, cookie, or authentication setup", async () => {
+    expect((await GET(new Request(`${origin}/api/studio`))).status).toBe(200);
+    const data = await (await GET(new Request(`${origin}/api/studio?action=data`))).json();
+    expect(data).toEqual({ designs: [], testimonials: [] });
   });
-  it("rejects cross-origin posts", async () => { expect((await POST(request({ action: "logout" }, await login(), "https://other.example"))).status).toBe(403); });
-  it("publishes a batch without repository credentials, with optional descriptions", async () => {
-    const cookie = await login();
+  it("publishes several designs with optional descriptions without logging in", async () => {
     const image = Buffer.from([137,80,78,71,13,10,26,10,0]).toString("base64");
-    const upload = await (await POST(request({ action: "image", image }, cookie))).json();
-    const item = { ticket: upload.ticket, title: "My flyer", description: "", type: "Flyers & Posters", tags: "" };
-    const response = await POST(request({ action: "designs", items: [item, { ...item, title: "Second flyer" }] }, cookie));
-    expect(response.status).toBe(200);
-    expect(saveBatch).toHaveBeenCalledWith("designs", expect.arrayContaining([expect.objectContaining({ title: "My flyer", description: "", imagePath: expect.stringContaining("/api/artwork?") }), expect.objectContaining({ title: "Second flyer" })]));
-    expect(readArchive).toHaveBeenCalledWith("designs");
+    const upload = await (await POST(request({ action: "image", image }))).json();
+    const item = { ticket: upload.ticket, title: "My flyer", type: "Flyers & Posters" };
+    expect((await POST(request({ action: "designs", items: [item, { ...item, title: "Second" }] }))).status).toBe(200);
+    expect(saveBatch).toHaveBeenCalledWith("designs", expect.arrayContaining([expect.objectContaining({ title: "My flyer", description: "" }), expect.objectContaining({ title: "Second" })]));
   });
-  it("rejects an unsigned image ticket without writing", async () => {
-    const cookie = await login(); const fetch = vi.fn(async () => ({ ok: true, json: async () => ({ object: { sha: "head" }, tree: { sha: "tree" } }) })); vi.stubGlobal("fetch", fetch);
-    expect((await POST(request({ action: "designs", items: [{ ticket: "forged.fake", title: "No" }] }, cookie))).status).toBe(400);
-    expect(fetch.mock.calls.every(call => !(call[1] as any)?.body)).toBe(true);
+  it("edits and removes existing testimonials by stable identity", async () => {
+    vi.mocked(readArchive).mockResolvedValue([{ id: "seed:testimonials:0", quote: "Old", name: "Client" }]);
+    expect((await POST(request({ action: "edit-testimonial", id: "seed:testimonials:0", quote: "Updated", name: "Client" }))).status).toBe(200);
+    expect(saveBatch).toHaveBeenCalledWith("testimonial-changes", [{ id: "seed:testimonials:0", quote: "Updated", name: "Client", organisation: "" }]);
+    expect((await POST(request({ action: "remove-testimonial", id: "seed:testimonials:0" }))).status).toBe(200);
+    expect(saveBatch).toHaveBeenCalledWith("testimonial-changes", [{ id: "seed:testimonials:0", removed: true }]);
+  });
+  it("rejects malformed pictures, missing titles and cross-origin writes", async () => {
+    expect((await POST(request({ action: "image", image: "bad" }))).status).toBe(400);
+    expect((await POST(request({ action: "designs", items: [{ ticket: "artwork/12345678-1234-1234-1234-123456789012.png", title: "", type: "Other" }] }))).status).toBe(400);
+    expect((await POST(request({ action: "testimonial", name: "A", quote: "B" }, "https://other.example"))).status).toBe(403);
+    expect(saveBatch).not.toHaveBeenCalled();
   });
 });
