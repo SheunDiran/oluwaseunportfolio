@@ -115,7 +115,7 @@ export default function Graphics() {
       <main className="graphics-page graphics-editorial">
         <section className="editorial-hero" aria-labelledby="editorial-title">
           <div className="editorial-composition">
-            <h1 id="editorial-title"><span className="editorial-graphic">GRAPHIC</span><span className="editorial-script">Designer</span></h1>
+            <h1 id="editorial-title"><span className="editorial-graphic">GRAPHICS</span><span className="editorial-script">Designer</span></h1>
             <img className="editorial-cutout" src={publicAsset("/images/sheun-designer-cutout.webp")} alt="Oluwaseun Oyediran with her arms crossed, wearing a pink shirt and dark waistcoat" fetchPriority="high" />
             <span className="editorial-flourish" aria-hidden="true" />
             <span className="editorial-coral-marks" aria-hidden="true"><i /><i /></span>
