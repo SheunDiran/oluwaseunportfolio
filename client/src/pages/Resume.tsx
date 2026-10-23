@@ -43,7 +43,7 @@ export default function Resume() {
               <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}><Mail size={14} color="#198754" /> oluwaseunoyediran641@gmail.com</span>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "8px", fontSize: "13px" }}>
-              <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer" style={{ color: "#198754", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              <a href="https://www.linkedin.com/in/oluwaseun-oyediran-65bb43326/" target="_blank" rel="noreferrer" style={{ color: "#198754", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                 LinkedIn <ExternalLink size={12} />
               </a>
               <a href="https://wa.me/2347073754496?text=Hi%20Sheun%2C%20I%20found%20your%20portfolio%20and%20would%20love%20to%20talk." target="_blank" rel="noreferrer" style={{ color: "#198754", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
@@ -108,7 +108,7 @@ export default function Resume() {
                 <span style={{ fontSize: "13px", color: "#198754", fontFamily: "'DM Mono', monospace" }}>2024 – PRESENT</span>
               </div>
               <p style={{ margin: "2px 0 8px", fontStyle: "italic", color: "#666", fontSize: "14px" }}>
-                MOAT Academy, CodeCamp, ILM Nexus Academy &amp; MS Virtual Academy · Lagos, Nigeria
+                CodeCamp, ILM Nexus Academy &amp; MS Virtual Academy · Lagos, Nigeria
               </p>
               <ul style={{ paddingLeft: "20px", margin: 0, color: "#444", fontSize: "14.5px", lineHeight: "1.6" }}>
                 <li>Trained 30+ students across software development bootcamps and intensive web engineering cohorts.</li>
@@ -162,7 +162,7 @@ export default function Resume() {
                 MamaGuard MVP <span style={{ fontWeight: "normal", color: "#198754", fontSize: "13px" }}>(NITHUB Hackathon Maternal Health)</span>
               </h4>
               <p style={{ margin: 0, fontSize: "14px", color: "#444" }}>
-                Maternal health web application built during the NITHUB Hackathon, achieving a verified 85/100 score on the judging rubric.
+                Maternal health web application built during the NITHUB Hackathon, focused on postpartum health checks and finding nearby care.
               </p>
             </div>
             <div>
@@ -170,7 +170,7 @@ export default function Resume() {
                 Tonic Solfa Music Web App <span style={{ fontWeight: "normal", color: "#198754", fontSize: "13px" }}>(Interactive Music EdTech)</span>
               </h4>
               <p style={{ margin: 0, fontSize: "14px", color: "#444" }}>
-                Platform enabling users to search, add songs, and study tonic solfa musical notations, improving user engagement by 25% and responsiveness by 30%.
+                Music learning project for finding songs and studying tonic solfa notation.
               </p>
             </div>
             <div>
@@ -213,7 +213,7 @@ export default function Resume() {
         <section style={{ borderTop: "1px solid #e0e5e0", paddingTop: "24px", marginTop: "36px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <p style={{ margin: 0, fontSize: "13px", color: "#777", fontFamily: "'DM Mono', monospace" }}>
-              OYEDIRAN OLUWASEUN · VERIFIED PORTFOLIO RESUME · 2026
+              OYEDIRAN OLUWASEUN · PORTFOLIO RESUME · 2026
             </p>
             <a
               href="/oluwaseun-oyediran-resume.pdf"

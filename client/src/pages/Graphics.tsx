@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Quote } from "lucide-react";
 import "./Graphics.css";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { presentDesign, isAttributedTestimonial } from "@/lib/design-presentation";
 import SheunShell from "@/components/SheunShell";
 
-type Design = { title: string; imagePath: string; type: string; description?: string; tags?: string[] };
+type Design = { id?: string; title: string; imagePath: string; type: string; description?: string; tags?: string[] };
 type Testimonial = { quote: string; name: string; organisation: string };
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
@@ -26,7 +27,7 @@ function GraphicFooter() {
         <div className="graphics-footer-main">
           <small>HAVE A GOOD IDEA?</small>
           <h2>Let&apos;s create something<br />worth seeing.</h2>
-          <a className="graphics-footer-cta" href="/contact.html">Let&apos;s work together <ArrowUpRight size={16} /></a>
+          <a className="graphics-footer-cta" href="/contact.html?service=design">Let&apos;s work together <ArrowUpRight size={16} /></a>
         </div>
         <div className="graphics-footer-contact">
           <span>FOLLOW / SAY HELLO</span>
@@ -43,6 +44,9 @@ function GraphicFooter() {
 export default function Graphics() {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [selected, setSelected] = useState<Design | null>(null);
   const ownerSession = false;
   const [activeFilter, setActiveFilter] = useState("All work");
@@ -51,16 +55,37 @@ export default function Graphics() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/gallery", { cache: "no-store", signal: controller.signal })
-      .then(response => { if (!response.ok) throw new Error("Gallery unavailable"); return response.json(); })
-      .then(data => { setDesigns(data.designs); setTestimonials(data.testimonials); })
-      .catch(() => {
-        if (controller.signal.aborted) return;
-        fetch(publicAsset("/designs.json")).then(r => r.json()).then(setDesigns).catch(() => {});
-        fetch(publicAsset("/testimonials.json")).then(r => r.json()).then(setTestimonials).catch(() => {});
-      });
-    return () => controller.abort();
-  }, []);
+    let cancelled = false;
+    const timeout = window.setTimeout(() => controller.abort(), 12000);
+    setLoading(true);
+    setLoadError(false);
+    async function load() {
+      try {
+        const response = await fetch("/api/gallery", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Gallery unavailable");
+        const data = await response.json();
+        if (!Array.isArray(data.designs) || !Array.isArray(data.testimonials)) throw new Error("Invalid gallery");
+        if (!cancelled) {
+          setDesigns(data.designs.map(presentDesign));
+          setTestimonials(data.testimonials.filter(isAttributedTestimonial));
+        }
+      } catch {
+        if (cancelled) return;
+        try {
+          const response = await fetch(publicAsset("/designs.json"), { signal: AbortSignal.timeout(8000) });
+          if (!response.ok) throw new Error("Archive unavailable");
+          const fallback = await response.json();
+          if (!Array.isArray(fallback) || !fallback.length) throw new Error("Archive unavailable");
+          if (!cancelled) setDesigns(fallback.map(presentDesign));
+        } catch { if (!cancelled) setLoadError(true); }
+      } finally {
+        window.clearTimeout(timeout);
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void load();
+    return () => { cancelled = true; controller.abort(); window.clearTimeout(timeout); };
+  }, [retry]);
 
   const filters = useMemo(() => ["All work", ...categories, ...(designs.some((design) => categoryFor(design) === "Other") ? ["Other"] : [])], [designs]);
   const countFor = (filter: string) => filter === "All work" ? designs.length : designs.filter((design) => categoryFor(design) === filter).length;
@@ -90,29 +115,10 @@ export default function Graphics() {
             <h2>Oluwaseun Oyediran</h2>
             <p className="editorial-role">GRAPHIC DESIGNER</p>
             <p>Thoughtful visuals for brands, events and communities.</p>
-            <div className="editorial-actions"><a href="#selected-work">View my work <ArrowUpRight size={15} /></a><a href="/contact.html">Let’s work together</a></div>
+            <div className="editorial-actions"><a href="#selected-work">View my work <ArrowUpRight size={15} /></a><a href="/contact.html?service=design">Let’s work together</a></div>
           </div>
         </section>
-        <section className="graphics-hero graphics-hero-intro">
-          <div className="graphics-hero-copy">
-            <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
-            <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
-            <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
-            <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
-            <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
-          </div>
-          <div className="graphics-portrait-stage">
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-one" />
-            <div className="graphics-portrait-orbit graphics-portrait-orbit-two" />
-            <div className="graphics-portrait-circle"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran, graphic designer" /></div>
-            <span className="graphics-portrait-stamp">DESIGN<br />WITH<br />PURPOSE</span>
-            <span className="graphics-portrait-caption">THE DESIGNER BEHIND THE WORK <i>↗</i></span>
-            <span className="graphics-portrait-spark" aria-hidden="true">✳</span>
-          </div>
-          <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
-        </section>
-
-        <section className="graphics-gallery graphics-selected-work" id="selected-work">
+        <section className="graphics-gallery graphics-selected-work" id="selected-work" aria-busy={loading}>
           <div className="graphics-gallery-head">
             <div><small>WORK</small><h2>Selected work</h2><p>Flyers, social content and visual identities.</p></div>
             {ownerSession && <a className="graphics-owner-preview" href="/admin" aria-label="Open owner preview and add a design"><span><Plus size={22} /></span><small>Add pictures</small></a>}
@@ -126,7 +132,7 @@ export default function Graphics() {
               ))}
             </div>
           </div>}
-          {visibleDesigns.length ? (
+          {loading ? <div className="graphics-loading" role="status"><p>Loading selected work…</p><div className="graphics-loading-grid" aria-hidden="true">{[1, 2, 3].map(item => <div key={item} />)}</div></div> : loadError ? <div className="graphics-empty" role="alert"><p>The gallery could not load. Please try again, or contact me for work samples.</p><button type="button" onClick={() => setRetry(value => value + 1)}>Try again</button><a href="/contact.html?service=design">Request work samples <ArrowUpRight size={14} /></a></div> : visibleDesigns.length ? (
             <div className="graphics-gallery-grid">
               {pagedDesigns.map((design, index) => (
                 <article className={`graphics-gallery-card graphics-gallery-card-${(index % 6) + 1}`} key={`${design.title}-${design.imagePath}`}>
@@ -137,8 +143,8 @@ export default function Graphics() {
                 </article>
               ))}
             </div>
-          ) : <p className="graphics-empty">{designs.length ? "There are no pieces in this category yet. Choose another filter to keep exploring." : "I’m preparing the first pieces for this archive. Please check back soon."}</p>}
-          {visibleDesigns.length > 0 && <nav className="graphics-pagination graphics-pagination-numbered" aria-label="Design gallery pages">
+          ) : <p className="graphics-empty">{designs.length ? "There are no pieces in this category yet. Choose another filter to keep exploring." : "New work will appear here soon. Contact me for current samples."}</p>}
+          {!loading && !loadError && visibleDesigns.length > 0 && <nav className="graphics-pagination graphics-pagination-numbered" aria-label="Design gallery pages">
             <button className="graphics-page-arrow" type="button" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)} aria-label="Previous page"><ArrowLeft size={16} /></button>
             <div className="graphics-page-numbers">{Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => <button type="button" key={pageNumber} className={currentPage === pageNumber ? "is-current" : ""} aria-current={currentPage === pageNumber ? "page" : undefined} onClick={() => goToPage(pageNumber)}>{pageNumber}</button>)}</div>
             <button className="graphics-page-arrow" type="button" disabled={currentPage === pageCount} onClick={() => goToPage(currentPage + 1)} aria-label="Next page"><ArrowRight size={16} /></button>
@@ -146,21 +152,34 @@ export default function Graphics() {
           </nav>}
         </section>
 
-        <section className="graphics-testimonials" aria-labelledby="graphics-testimonials-title">
-          <div className="graphics-testimonials-heading"><small>TESTIMONIALS</small><h2 id="graphics-testimonials-title">Words from people I&apos;ve worked with</h2></div>
-          {testimonials.length ? (
-            <div className="graphics-testimonial-grid">{testimonials.map((item, index) => <article className="graphics-testimonial-card" key={`${item.name}-${index}`}><Quote size={25} aria-hidden="true" /><blockquote>{item.quote}</blockquote><span className="graphics-testimonial-rule" /><p>{item.name}<small>{item.organisation}</small></p></article>)}</div>
-          ) : (
-            <div className="graphics-testimonial-grid graphics-testimonial-empty">
-              <article className="graphics-testimonial-card"><Quote size={25} aria-hidden="true" /><p className="graphics-testimonial-note">Client notes will appear here once I have permission to share them.</p><span className="graphics-testimonial-rule" /><small>CLIENT STORIES / COMING SOON</small></article>
-              <article className="graphics-testimonial-card graphics-testimonial-invite"><Quote size={25} aria-hidden="true" /><p className="graphics-testimonial-note">Have we worked together? I&apos;d love to hear about your experience.</p><span className="graphics-testimonial-rule" /><a href="mailto:oluwaseunoyediran641@gmail.com?subject=Portfolio%20testimonial">Share a note <ArrowUpRight size={13} /></a></article>
-            </div>
-          )}
+        <section className="graphics-hero graphics-hero-intro">
+          <div className="graphics-hero-copy">
+            <small className="graphics-kicker"><span /> GRAPHIC DESIGNER / LAGOS, NIGERIA</small>
+            <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
+            <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
+            <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
+            <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html?service=design">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
+          </div>
+          <div className="graphics-portrait-stage">
+            <div className="graphics-portrait-orbit graphics-portrait-orbit-one" />
+            <div className="graphics-portrait-orbit graphics-portrait-orbit-two" />
+            <div className="graphics-portrait-circle"><img src="/images/about-sheun-portrait.jpeg" alt="Oluwaseun “Sheun” Oyediran, graphic designer" /></div>
+            <span className="graphics-portrait-stamp">DESIGN<br />WITH<br />PURPOSE</span>
+            <span className="graphics-portrait-caption">THE DESIGNER BEHIND THE WORK <i>↗</i></span>
+            <span className="graphics-portrait-spark" aria-hidden="true">✳</span>
+          </div>
+          <div className="graphics-hero-foot"><span>VISUAL DESIGN / 01</span><span>FLYERS · BRANDING · CAMPAIGNS</span><a href="#selected-work">SCROLL TO EXPLORE ↓</a></div>
         </section>
+
+        {testimonials.length > 0 && <section className="graphics-testimonials" aria-labelledby="graphics-testimonials-title">
+          <div className="graphics-testimonials-heading"><small>TESTIMONIALS</small><h2 id="graphics-testimonials-title">Words from people I&apos;ve worked with</h2></div>
+          <div className="graphics-testimonial-grid">{testimonials.map((item, index) => <article className="graphics-testimonial-card" key={`${item.name}-${index}`}><Quote size={25} aria-hidden="true" /><blockquote>{item.quote}</blockquote><span className="graphics-testimonial-rule" /><p>{item.name}<small>{item.organisation}</small></p></article>)}</div>
+        </section>}
+
       </main>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="graphics-viewer">
-          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription className={selected.description ? "" : "sr-only"}>{selected.description || `Full artwork: ${selected.title}`}</DialogDescription>{selected.tags?.length ? <div className="graphics-viewer-tags" aria-label="Project tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}<a href="/contact.html">Let’s work together <ArrowUpRight size={14} /></a></>}
+          {selected && <><small>{selected.type}</small><DialogTitle>{selected.title}</DialogTitle><img src={publicAsset(selected.imagePath)} alt={selected.title} /><DialogDescription className={selected.description ? "" : "sr-only"}>{selected.description || `Full artwork: ${selected.title}`}</DialogDescription>{selected.tags?.length ? <div className="graphics-viewer-tags" aria-label="Project tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}<a href="/contact.html?service=design">Let’s work together <ArrowUpRight size={14} /></a></>}
         </DialogContent>
       </Dialog>
       <GraphicFooter />

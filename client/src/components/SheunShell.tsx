@@ -21,6 +21,15 @@ export default function SheunShell({ children, active }: { children: ReactNode; 
     return () => window.removeEventListener("resize", closeOnResize);
   }, []);
 
+  useEffect(() => {
+    if (!avatarOpen && !menuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setAvatarOpen(false); setMenuOpen(false); }
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [avatarOpen, menuOpen]);
+
   return <div className="sheun-page"><header className="sheun-page-header"><a className="sheun-page-brand" href="/" onClick={(event) => { if ((event.target as HTMLElement).closest(".sheun-brand-avatar")) { event.preventDefault(); setAvatarOpen(true); } setMenuOpen(false); }}><img className="sheun-brand-avatar" src={face} alt="Sheun — open full portrait" /><span className="sheun-brand-mark">S</span><b className="sheun-brand-full">OYEDIRAN OLUWASEUN <i>(SHEUN)</i></b><b className="sheun-brand-short">SHEUN</b></a><div className="sheun-mobile-tools"><button className="sheun-mobile-avatar" type="button" onClick={() => setAvatarOpen(true)} aria-label="Open Sheun's profile image"><img src={face} alt="Sheun" /></button><button className="sheun-menu-toggle" type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button></div><nav className={menuOpen ? "is-open" : ""}>{links.map(([label, href]) => <a key={href} className={active === label.toLowerCase() || (active === "about" && label === "About me") ? "active" : ""} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<a className="sheun-nav-contact" href="/contact.html" onClick={() => setMenuOpen(false)}>Let's talk <ArrowUpRight size={14} /></a></nav></header>{children}{avatarOpen && <div className="mobile-profile-lightbox" role="dialog" aria-modal="true" aria-label="Sheun profile image" onMouseDown={(event) => event.target === event.currentTarget && setAvatarOpen(false)}><button type="button" onClick={() => setAvatarOpen(false)} aria-label="Close profile image"><X size={20} /></button><img src={face} alt="Full portrait of Sheun" /><span>ESC TO CLOSE / SHEUN 001</span></div>}<a className="whatsapp-float" href="https://wa.me/2347073754496?text=Hi%20Sheun%2C%20I%20found%20your%20portfolio%20and%20would%20love%20to%20talk." target="_blank" rel="noreferrer" aria-label="Message Sheun on WhatsApp"><MessageCircle size={21} /><span>WhatsApp Sheun</span></a><FeedbackDrawer /></div>;
 }
 

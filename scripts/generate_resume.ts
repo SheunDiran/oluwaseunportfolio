@@ -114,7 +114,7 @@ async function generateResume() {
     color: slateText,
   });
 
-  const linksText = "Portfolio: diranhub-ewvb8evs.manus.space   |   LinkedIn: linkedin.com/feed";
+  const linksText = "Portfolio: myportfoliosheun.vercel.app   |   LinkedIn: oluwaseun-oyediran-65bb43326";
   page.drawText(linksText, {
     x: textStartX,
     y: height - 88,
@@ -214,7 +214,7 @@ async function generateResume() {
     },
     {
       role: "Lead Technical Instructor",
-      org: "MOAT Academy, CodeCamp, ILM Nexus Academy & MS Virtual Academy",
+      org: "CodeCamp, ILM Nexus Academy & MS Virtual Academy",
       location: "Lagos, Nigeria",
       period: "2024 – Present",
       bullets: [
@@ -304,12 +304,12 @@ async function generateResume() {
     {
       name: "Tonic Solfa Music Web App",
       stack: "Python, Flask, JavaScript, Music Notation",
-      desc: "Music website allowing users to search, add songs, and access tonic solfa notation; increased responsiveness by 30% and user engagement by 25%.",
+      desc: "Music learning website allowing users to search, add songs, and access tonic solfa notation.",
     },
     {
       name: "MamaGuard Maternal Health MVP",
       stack: "React, Python, Health Tech",
-      desc: "Maternal health system created for the NITHUB Hackathon, securing an 85/100 score from the judging panel.",
+      desc: "Postpartum health MVP created for the NITHUB Hackathon, with daily check-ins and nearby care discovery.",
     },
     {
       name: "D5 Rentals Booking Portal",

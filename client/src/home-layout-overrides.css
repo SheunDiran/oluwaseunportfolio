@@ -78,3 +78,8 @@
     z-index: 999 !important;
   }
 }
+/* Keep the service headline inside narrow screens. */
+.sheun-hero-copy h1 { font-size: clamp(48px, 5.8vw, 80px); }
+@media (max-width: 780px) {
+  .sheun-hero-copy h1 { font-size: clamp(38px, 10.8vw, 66px) !important; }
+}
