@@ -1,5 +1,6 @@
 import { readArchive, saveBatch, saveImage } from "../server/studio-storage";
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { vercelApi } from "../server/vercel-api";
 
 const COOKIE = "__Host-sheun-studio";
 const LIFE = 8 * 60 * 60;
@@ -95,3 +96,5 @@ function failure(error: unknown) {
   console.error("Studio request failed", error instanceof Error ? error.name : "UnknownError");
   return reply({ error: "Your changes could not be saved. Please try again." }, 500);
 }
+
+export default vercelApi({ GET, POST });
