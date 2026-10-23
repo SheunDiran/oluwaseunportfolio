@@ -38,6 +38,32 @@ export async function POST(request: Request) {
       const path = await saveImage(bytes, png ? "png" : jpeg ? "jpg" : "webp");
       return reply({ ticket: path });
     }
+    if (["edit-design", "remove-design", "pin-design"].includes(body.action)) {
+      const id = text(body.id, 300, true);
+      const current = await readArchive("designs");
+      if (!current.some(item => item.id === id)) throw new StudioError("This design no longer exists. Refresh the page.", 404);
+      let change: Record<string, unknown> = { id };
+      let pinChanges: Record<string, unknown>[] | undefined;
+      if (body.action === "remove-design") change.removed = true;
+      else if (body.action === "pin-design") {
+        if (typeof body.pinned !== "boolean") throw new StudioError("Choose whether to pin this design.");
+        const order = body.pinOrder ?? Math.min(10000, Math.max(0, ...current.filter(item => item.pinned).map(item => item.pinOrder || 1)) + 1);
+        if (!Number.isInteger(order) || order < 1 || order > 10000) throw new StudioError("Pin position must be a whole number from 1 to 10000.");
+        const pinned = current.filter(item => item.pinned && item.id !== id);
+        if (body.pinned) pinned.splice(Math.min(order - 1, pinned.length), 0, { id });
+        pinChanges = pinned.map((item, index) => ({ id: item.id, pinned: true, pinOrder: index + 1 }));
+        if (!body.pinned) pinChanges.push({ id, pinned: false, pinOrder: 0 });
+      } else {
+        change.title = text(body.title, 90, true);
+        change.description = text(body.description ?? "", 420);
+        if (body.ticket !== undefined) {
+          if (typeof body.ticket !== "string" || !/^artwork\/[a-f0-9-]{36}\.(png|jpg|webp)$/.test(body.ticket)) throw new StudioError("Please select a valid uploaded picture.");
+          change.imagePath = `/api/artwork?path=${encodeURIComponent(body.ticket)}`;
+        }
+      }
+      await saveBatch("design-changes", pinChanges || [change]);
+      return reply({ saved: true, items: await readArchive("designs") });
+    }
     if (body.action === "edit-testimonial" || body.action === "remove-testimonial") {
       const id = text(body.id, 300, true);
       const current = await readArchive("testimonials");

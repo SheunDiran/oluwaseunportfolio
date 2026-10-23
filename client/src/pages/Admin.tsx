@@ -3,7 +3,7 @@ import { ArrowLeft, ImagePlus, Plus, Trash2, Upload } from "lucide-react";
 import { studioRequest, imageForUpload, type DesignDraft } from "@/lib/studio";
 import "./AdminUpload.css";
 
-type Design = { title: string; imagePath: string; type: string };
+type Design = { id: string; title: string; description?: string; imagePath: string; type: string; pinned?: boolean; pinOrder?: number };
 type Testimonial = { id?: string; quote: string; name: string; organisation: string };
 const blank = (): DesignDraft => ({ id: crypto.randomUUID(), file: null, title: "", description: "", type: "Flyers & Posters", tags: "" });
 export default function Admin() {
@@ -25,6 +25,16 @@ export default function Admin() {
     setBusy(true); status(remove ? "Removing testimonial…" : "Saving changes…");
     try { const result = await studioRequest({ action: remove ? "remove-testimonial" : "edit-testimonial", ...item }); setTestimonials(result.items); status(remove ? "Testimonial removed." : "Testimonial updated."); }
     catch (error) { status((error as Error).message, true); } finally { setBusy(false); }
+  }
+  async function changeDesign(action: string, item: Design, file?: File) {
+    setBusy(true); status(action === "remove-design" ? "Removing design…" : "Saving design…");
+    try {
+      let ticket: string | undefined;
+      if (file) { status("Uploading replacement picture…"); ticket = (await studioRequest({ action: "image", image: await imageForUpload(file) })).ticket; }
+      const result = await studioRequest({ action, id: item.id, title: item.title, description: item.description || "", pinned: !!item.pinned, pinOrder: item.pinOrder, ...(ticket ? { ticket } : {}) });
+      setDesigns(result.items); status(action === "remove-design" ? "Design removed from your portfolio." : "Design saved. Your gallery is updated.");
+      return true;
+    } catch (error) { status((error as Error).message, true); return false; } finally { setBusy(false); }
   }
   function update(id: string, changes: Partial<DesignDraft>) { setDrafts(current => current.map(item => item.id === id ? { ...item, ...changes } : item)); }
   function addFiles(files: File[]) {
@@ -66,7 +76,7 @@ export default function Admin() {
       </fieldset></form>
     </section>
     <section className="studio-panel"><h2>Add a testimonial</h2><p>Use feedback you have permission to share.</p><form onSubmit={publishQuote}><fieldset disabled={busy}><label>Testimonial<textarea required rows={4} maxLength={700} value={quote.quote} onChange={event => setQuote({ ...quote, quote: event.target.value })} /></label><div className="studio-two-fields"><label>Name<input required maxLength={80} value={quote.name} onChange={event => setQuote({ ...quote, name: event.target.value })} /></label><label>Organisation <span>(optional)</span><input maxLength={100} value={quote.organisation} onChange={event => setQuote({ ...quote, organisation: event.target.value })} /></label></div><button className="studio-primary" disabled={busy}>Publish testimonial</button></fieldset></form></section>
-    <section className="studio-panel"><h2>Saved work · {designs.length}</h2><div className="studio-saved-grid">{designs.map(item => <article key={item.imagePath}><img src={item.imagePath} alt={item.title} loading="lazy" /><h3>{item.title}</h3><p>{item.type}</p></article>)}</div>{!designs.length && <p>Your published designs will appear here.</p>}<h2>Testimonials · {testimonials.length}</h2>{testimonials.map(item => <TestimonialEditor key={item.id} item={item} busy={busy} save={changeQuote} />)}</section>
+    <section className="studio-panel"><h2>Saved work · {designs.length}</h2><p>Edit or replace your artwork here. Pinned designs stay above new uploads; use positions 1, 2, 3 to choose their order.</p><div className="studio-saved-grid">{designs.map(item => <SavedDesign key={item.id} item={item} busy={busy} save={changeDesign} />)}</div>{!designs.length && <p>Your published designs will appear here.</p>}<h2>Testimonials · {testimonials.length}</h2>{testimonials.map(item => <TestimonialEditor key={item.id} item={item} busy={busy} save={changeQuote} />)}</section>
   </main>;
 }
 function DesignForm({ item, index, update, remove }: { item: DesignDraft; index: number; update: (changes: Partial<DesignDraft>) => void; remove: () => void }) {
@@ -82,3 +92,28 @@ function TestimonialEditor({ item, busy, save }: { item: Testimonial; busy: bool
   if (!editing) return <blockquote>{item.quote}<cite>{item.name}{item.organisation ? ` · ${item.organisation}` : ""}</cite><div className="studio-actions"><button type="button" className="studio-secondary" disabled={busy} onClick={() => setEditing(true)}>Edit</button><button type="button" className="studio-remove" disabled={busy} onClick={() => { if (window.confirm("Remove this testimonial from your portfolio?")) void save(item, true); }}>Remove</button></div></blockquote>;
   return <form onSubmit={event => { event.preventDefault(); void save(draft); }}><fieldset disabled={busy}><label>Testimonial<textarea required maxLength={700} value={draft.quote} onChange={event => setDraft({ ...draft, quote: event.target.value })} /></label><label>Name<input required maxLength={80} value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })} /></label><label>Organisation (optional)<input maxLength={100} value={draft.organisation} onChange={event => setDraft({ ...draft, organisation: event.target.value })} /></label><div className="studio-actions"><button className="studio-primary">Save changes</button><button type="button" className="studio-secondary" onClick={() => { setDraft(item); setEditing(false); }}>Close</button></div></fieldset></form>;
 }
+
+function SavedDesign({ item, busy, save }: { item: Design; busy: boolean; save: (action: string, item: Design, file?: File) => Promise<boolean> }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(item.title);
+  const [description, setDescription] = useState(item.description || "");
+  const [file, setFile] = useState<File | undefined>();
+  const [preview, setPreview] = useState("");
+  const [position, setPosition] = useState(String(item.pinOrder || 1));
+  useEffect(() => { setTitle(item.title); setDescription(item.description || ""); setPosition(String(item.pinOrder || 1)); }, [item]);
+  useEffect(() => { if (!file) { setPreview(""); return; } const url = URL.createObjectURL(file); setPreview(url); return () => URL.revokeObjectURL(url); }, [file]);
+  return <article className="studio-saved-design"><img src={preview || item.imagePath} alt={title} loading="lazy" />
+    {editing ? <form onSubmit={async event => { event.preventDefault(); if (await save("edit-design", { ...item, title, description }, file)) { setFile(undefined); setEditing(false); } }}><fieldset disabled={busy}>
+      <label>Title<input required maxLength={90} value={title} onChange={event => setTitle(event.target.value)} /></label>
+      <label>Description (optional)<textarea rows={3} maxLength={420} value={description} onChange={event => setDescription(event.target.value)} /></label>
+      <label>Replace image (optional)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => setFile(event.target.files?.[0])} /></label>
+      <div className="studio-actions"><button className="studio-primary">Save changes</button><button className="studio-secondary" type="button" onClick={() => { setEditing(false); setFile(undefined); setTitle(item.title); setDescription(item.description || ""); }}>Cancel</button></div>
+    </fieldset></form> : <><h3>{item.title}</h3><p>{item.type}{item.pinned ? ` · Pinned #${item.pinOrder || 1}` : ""}</p><div className="studio-actions">
+      <button className="studio-secondary" type="button" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
+      <button className="studio-secondary" type="button" disabled={busy} onClick={() => void save("pin-design", { ...item, pinned: !item.pinned, pinOrder: item.pinned ? item.pinOrder : undefined })}>{item.pinned ? "Unpin" : "Pin to top"}</button>
+      <button className="studio-remove" type="button" disabled={busy} onClick={() => { if (window.confirm(`Delete “${item.title}” from your portfolio?`)) void save("remove-design", item); }}>Delete</button>
+    </div></>}
+    {item.pinned && !editing && <form className="studio-pin-position" onSubmit={event => { event.preventDefault(); void save("pin-design", { ...item, pinned: true, pinOrder: Number(position) }); }}><label>Pin position<input type="number" min={1} max={10000} step={1} required value={position} disabled={busy} onChange={event => setPosition(event.target.value)} /></label><button className="studio-secondary" disabled={busy}>Save position</button></form>}
+  </article>;
+}
+
