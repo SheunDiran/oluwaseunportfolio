@@ -1,0 +1,62 @@
+name: Generate featured-project screenshots
+on:
+  push:
+    branches:
+      - portfolio-refresh-2026-11
+    paths:
+      - .github/workflows/portfolio-previews.yml
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio-refresh-2026-11
+      - name: Set up browser runner
+        run: |
+          mkdir -p /tmp/portfolio-previews
+          cd /tmp/portfolio-previews
+          npm init -y >/dev/null
+          npm install --silent --no-audit --no-fund playwright@1.57.0
+          which google-chrome || which chromium || true
+      - name: Capture verified live app previews
+        run: |
+          node <<'JS'
+          const { chromium }=require('/tmp/portfolio-previews/node_modules/playwright');
+          const fs=require('fs');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+            const sites=[
+              {name:'accord',url:'https://accord-evidence-hackathon.vercel.app/',term:'accord'},
+              {name:'borrowed-authority',url:'https://borrowed-authority-lexsi.vercel.app/',term:'Authority'},
+              {name:'eduvia',url:'https://eduvia-study.vercel.app/',term:'Eduvia',optional:true}
+            ];
+            for(const site of sites){
+              const page=await browser.newPage({viewport:{width:1200,height:800},deviceScaleFactor:1});
+              try{
+                const response=await page.goto(site.url,{waitUntil:'domcontentloaded',timeout:35000});
+                await page.waitForTimeout(1800);
+                const title=await page.title();
+                const body=(await page.locator('body').innerText({timeout:15000})).slice(0,5000);
+                if(!response || response.status()!==200 || !body.toLowerCase().includes(site.term.toLowerCase()) || /Authentication Required|Sign in to Vercel/i.test(title+" "+body)){
+                  throw new Error('Unexpected destination/status '+response?.status()+' title='+title+' body='+body.slice(0,100));
+                }
+                const out='client/public/images/project-'+site.name+'.jpg';
+                await page.screenshot({path:out,type:'jpeg',quality:83,animations:'disabled'});
+                console.log('CAPTURED',out,fs.statSync(out).size,title);
+              }catch(e){if(!site.optional) throw e;console.log('OPTIONAL SITE SKIPPED',site.name,String(e).slice(0,250))}
+              finally{await page.close()}
+            }
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          JS
+      - name: Commit captured artwork
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add client/public/images/project-accord.jpg client/public/images/project-borrowed-authority.jpg
+          if [ -f client/public/images/project-eduvia.jpg ]; then git add client/public/images/project-eduvia.jpg; fi
+          git diff --staged --quiet || { git commit -m "Add authentic screenshots of new portfolio projects"; git push origin HEAD:portfolio-refresh-2026-11; }
