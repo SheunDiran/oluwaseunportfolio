@@ -1,7 +1,7 @@
 name: Portfolio build and project checks
 on:
   push:
-    branches: [main, portfolio-refresh-2026-11]
+    branches: [main, show-limick-caseclosed-previews]
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,11 +21,13 @@ jobs:
           p=Path('client/src/pages/SheunPages.tsx').read_text()
           assert '["ACCORD",' in p and '["BORROWED AUTHORITY",' in p
           assert '["EDUVIA",' not in p
-          for name in ['accord','borrowed-authority']:
+          for name in ['accord','borrowed-authority','limick','caseclosed']:
               path=Path('client/public/images/project-'+name+'.jpg')
               assert path.is_file() and path.stat().st_size>10000, str(path)
               print('Screenshot verified:',path,path.stat().st_size,'bytes')
-          print('Both live project cards are present, without Eduvia.')
+          assert '"LIMICK": { image: "/images/project-limick.jpg"' in p
+          assert '"CASECLOSED: THE BLIND ANGLE": { image: "/images/project-caseclosed.jpg"' in p
+          print('All four featured screenshots and project cards are present, without Eduvia.')
           PY
       - name: Install dependencies
         run: npm install --no-audit --no-fund
