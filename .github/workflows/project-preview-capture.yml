@@ -43,16 +43,18 @@ jobs:
                 console.log('ERRORS',site.name,JSON.stringify(errors.slice(0,5)));
                 if (!response || response.status()!==200 || /Authentication Required|Log in to Vercel|404: NOT_FOUND/i.test(title+" "+body)) throw Error('Invalid public page '+site.name);
                 if(site.name==='caseclosed'){
-                  const candidates=['Start Investigation','Begin Investigation','Start Game','Play Game','Begin','Start','Continue','Enter Case','Enter Game'];
-                  for(const label of candidates){
-                    const btn=page.getByRole('button',{name:new RegExp(label,'i')});
-                    if(await btn.count()>0 && await btn.first().isVisible()){
-                      console.log('CLICKING',label);
-                      await btn.first().click({timeout:6000});
-                      await page.waitForTimeout(2000);
-                      break;
-                    }
+                  const steps=['[data-action="skip-cinema"]','[data-action="start"]','[data-go="scene"]'];
+                  for(const selector of steps){
+                    const el=page.locator(selector).first();
+                    try{
+                      if(await el.count() && await el.isVisible()){
+                        await el.click({timeout:4000,force:true});
+                        console.log('ADVANCED',selector);
+                        await page.waitForTimeout(1000);
+                      }
+                    }catch(e){console.log('SKIP-ADVANCE',selector,String(e).slice(0,130))}
                   }
+                  console.log('FINAL-CASE-STAGE',JSON.stringify((await page.locator('body').innerText()).slice(0,650)));
                 }
                 const out='client/public/images/project-'+site.name+'.jpg';
                 await page.screenshot({path:out,type:'jpeg',quality:88,animations:'disabled'});
