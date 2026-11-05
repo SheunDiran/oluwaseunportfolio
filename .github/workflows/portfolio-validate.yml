@@ -1,0 +1,33 @@
+name: Portfolio build and project checks
+on:
+  push:
+    branches: [main, portfolio-refresh-2026-11]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate project content and image files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('client/src/pages/SheunPages.tsx').read_text()
+          assert '["ACCORD",' in p and '["BORROWED AUTHORITY",' in p
+          assert '["EDUVIA",' not in p
+          for name in ['accord','borrowed-authority']:
+              path=Path('client/public/images/project-'+name+'.jpg')
+              assert path.is_file() and path.stat().st_size>10000, str(path)
+              print('Screenshot verified:',path,path.stat().st_size,'bytes')
+          print('Both live project cards are present, without Eduvia.')
+          PY
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build complete Vite site
+        run: npm run build:pages
