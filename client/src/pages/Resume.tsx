@@ -68,7 +68,8 @@ export default function Resume() {
           <div style={{ display: "grid", gap: "12px", marginBottom: "16px" }}>
             <p style={{ margin: 0 }}><strong>Frontend:</strong> JavaScript (ES6+), React.js, HTML5, CSS3, Tailwind CSS, Responsive Web Architecture</p>
             <p style={{ margin: 0 }}><strong>Backend &amp; Databases:</strong> Python, Flask, RESTful APIs, MySQL, Database Modeling, Session &amp; JWT Auth, Role-Based Access Control (RBAC)</p>
-            <p style={{ margin: 0 }}><strong>Tools &amp; DevOps:</strong> Git, GitHub, Linux / Bash, Postman, Figma, PythonAnywhere, Cloud Deployment</p>
+            <p style={{ margin: 0 }}><strong>Tools &amp; DevOps:</strong> Git, GitHub, Linux / Bash, Postman, PythonAnywhere, Cloud Deployment</p>
+            <p style={{ margin: 0 }}><strong>Creative &amp; Design:</strong> Adobe Photoshop (primary), Canva, Figma (occasional), social media graphics, visual hierarchy and brand assets</p>
             <p style={{ margin: 0 }}><strong>Pedagogy &amp; Leadership:</strong> Technical Instruction, Curriculum Development, Code Review, Mentorship, Public Speaking</p>
           </div>
           <div className="resume-tags">
