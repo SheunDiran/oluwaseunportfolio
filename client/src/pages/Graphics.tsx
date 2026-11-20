@@ -133,6 +133,7 @@ export default function Graphics() {
             <p className="graphics-intro-name">Hello, I&apos;m Oluwaseun <b>“Sheun”</b> Oyediran.</p>
             <h2>I make ideas<br />impossible<br /><em>to ignore.</em></h2>
             <p className="graphics-intro-bio">I&apos;m a graphic designer creating bold, thoughtful visuals for brands, events and communities. From the first glance to the smallest detail, I make every piece clear, expressive and made for its audience.</p>
+            <p className="graphics-intro-bio"><strong>Design toolkit:</strong> Adobe Photoshop · Canva · Figma. I work primarily in Photoshop and Canva, with Figma when a brief calls for it.</p>
             <div className="graphics-hero-actions"><a className="graphics-hero-link" href="#selected-work">Explore selected work <ArrowRight size={15} /></a><a className="graphics-hero-contact" href="/contact.html?service=design">Let&apos;s work together <ArrowUpRight size={14} /></a></div>
           </div>
           <div className="graphics-portrait-stage">
