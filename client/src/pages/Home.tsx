@@ -12,7 +12,7 @@ export default function Home() {
               <small>FULL-STACK DEVELOPER / GRAPHIC DESIGNER</small>
               <h1>Websites built.<br /><span>Ideas designed.</span></h1>
               <p>I am <b>OYEDIRAN SHEUN</b></p>
-              <p className="sheun-hero-detail">I build websites with Python, Flask and JavaScript, design visuals for brands and events, and teach others to build.</p>
+              <p className="sheun-hero-detail">I build websites with Python, Flask and JavaScript, create brand and event visuals using Adobe Photoshop, Canva and Figma, and teach others to build.</p>
               <div className="sheun-hero-actions">
                 <a href="/projects.html">Web development <ArrowRight size={15} /></a>
                 <a href="/designs/#selected-work">Graphic design <ArrowRight size={14} /></a>
