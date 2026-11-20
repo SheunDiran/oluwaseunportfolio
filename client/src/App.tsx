@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Graphics from "./pages/Graphics";
 import NotFound from "./pages/NotFound";
 import Resume from "./pages/Resume";
+import DesignResume from "./pages/DesignResume";
 import { AboutPage, ContactPage, ProjectsPage, SkillsPage, TrainingPage } from "./pages/SheunPages";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path={path("/graphics.html")}>
         <Redirect to={path("/designs")} />
       </Route>
+      <Route path={path("/design-cv")} component={DesignResume} />
       <Route path={path("/resume")} component={Resume} />
       <Route path={path("/resume.html")} component={Resume} />
       <Route path={path("/about.html")} component={AboutPage} />
